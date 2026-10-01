@@ -13,3 +13,6 @@ frontend/dist/
 # Editor / OS
 .vscode/
 .DS_Store
+
+# Archivos temporales de Office
+~$*
