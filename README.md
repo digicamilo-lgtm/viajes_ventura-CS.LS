@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** Informe Técnico Grupal en elaboración (`Informe_Tecnico_Viajes_Aventura.docx`) — secciones 2 (requerimientos funcionales y no funcionales) y 3 (modelamiento UML/BPMN) completas. Sin código todavía.
+**Estado:** Informe Técnico Grupal en elaboración (`Informe_Tecnico_Viajes_Aventura.docx`) — secciones 2 (requerimientos funcionales y no funcionales), 3 (modelamiento UML/BPMN) y 4 (metodología ágil) completas. Sin código todavía.
 
 ## Material de referencia
 
@@ -29,11 +29,11 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 4 — modelamiento de la solución con BPMN, casos de uso y diagrama de clases UML (2026-10-01).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 5 — metodología ágil: roles, Product Backlog y Sprint Backlog (2026-10-01).
 
 ## Próximos pasos
 
 1. ~~Levantar requerimientos a partir del caso de estudio.~~ ✅ hecho (Cambio 3).
 2. ~~Modelar la solución (BPMN, casos de uso, diagrama de clases UML).~~ ✅ hecho (Cambio 4).
-3. Definir metodología ágil (roles, Product Backlog, Sprint Backlog).
-4. Implementar por dominios (backend + frontend) y seguridad (autenticación).
+3. ~~Definir metodología ágil (roles, Product Backlog, Sprint Backlog).~~ ✅ hecho (Cambio 5).
+4. Implementar por dominios (backend + frontend) y seguridad (autenticación) — Sprint 1, 2-3 de octubre.
