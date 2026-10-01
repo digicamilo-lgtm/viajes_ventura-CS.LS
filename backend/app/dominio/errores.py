@@ -8,3 +8,7 @@ class NoEncontradoError(Exception):
 
 class NoAutenticadoError(Exception):
     """Falta un token de sesión válido, o las credenciales no coinciden (R10, R11)."""
+
+
+class NoAutorizadoError(Exception):
+    """El usuario está autenticado pero su rol no permite la operación (S1, RNF-03)."""

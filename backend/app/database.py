@@ -50,6 +50,14 @@ CREATE TABLE IF NOT EXISTS clientes (
     hash_contrasena TEXT NOT NULL                                      -- R10
 );
 
+-- S1: los socios que mantienen el catálogo. Se crean con: python -m app.crear_administrador
+CREATE TABLE IF NOT EXISTS administradores (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre          TEXT NOT NULL,
+    correo          TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    hash_contrasena TEXT NOT NULL                                      -- R10
+);
+
 CREATE TABLE IF NOT EXISTS reservas (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     cliente_id        INTEGER NOT NULL REFERENCES clientes (id),

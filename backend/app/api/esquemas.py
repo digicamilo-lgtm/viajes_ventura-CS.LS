@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from app.dominio import Cliente, Destino, EstadoPaquete, Paquete, Reserva
+from app.dominio import Cliente, Destino, EstadoPaquete, Paquete, Reserva, Usuario
 
 Texto = Annotated[str, Field(max_length=100)]
 # bcrypt ignora cualquier byte más allá del 72; se limita aquí para no truncar en silencio.
@@ -122,7 +122,7 @@ class ClienteSalida(BaseModel):
 
     @classmethod
     def desde(cls, c: Cliente) -> "ClienteSalida":
-        return cls(id=c.id, nombre=c.nombre, correo=c.correo)
+        return cls(**c.datos_publicos())
 
 
 class ClientePerfil(ClienteSalida):
@@ -133,6 +133,16 @@ class ClientePerfil(ClienteSalida):
     @classmethod
     def desde(cls, c: Cliente) -> "ClientePerfil":
         return cls(id=c.id, nombre=c.nombre, correo=c.correo, rut=c.rut, telefono=c.telefono)
+
+
+class AdministradorSalida(BaseModel):
+    id: int
+    nombre: str
+    correo: str
+
+    @classmethod
+    def desde(cls, a: Usuario) -> "AdministradorSalida":
+        return cls(id=a.id, nombre=a.nombre, correo=a.correo)
 
 
 class CredencialesEntrada(BaseModel):

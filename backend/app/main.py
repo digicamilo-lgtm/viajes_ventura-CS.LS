@@ -13,9 +13,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import clientes, destinos, paquetes, reservas
+from app.api import administradores, clientes, destinos, paquetes, reservas
 from app.database import conectar, crear_esquema
-from app.dominio import NoAutenticadoError, NoEncontradoError, ReglaNegocioError
+from app.dominio import NoAutenticadoError, NoAutorizadoError, NoEncontradoError, ReglaNegocioError
 
 log = logging.getLogger("viajes_aventura")
 STATIC = Path(__file__).resolve().parent.parent / "static"
@@ -36,6 +36,7 @@ app.include_router(destinos.router)
 app.include_router(paquetes.router)
 app.include_router(clientes.router)
 app.include_router(reservas.router)
+app.include_router(administradores.router)
 
 
 # --- Manejo de errores: nunca se expone una traza interna (sección 7.3) ---
@@ -52,6 +53,11 @@ async def no_encontrado(_: Request, exc: NoEncontradoError):
 @app.exception_handler(NoAutenticadoError)
 async def no_autenticado(_: Request, exc: NoAutenticadoError):
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": str(exc)})
+
+
+@app.exception_handler(NoAutorizadoError)
+async def no_autorizado(_: Request, exc: NoAutorizadoError):
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)})
 
 
 @app.exception_handler(RequestValidationError)

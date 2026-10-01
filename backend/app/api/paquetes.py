@@ -4,12 +4,13 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.api.dependencias import obtener_conexion, obtener_hoy
+from app.api.dependencias import obtener_administrador_actual, obtener_conexion, obtener_hoy
 from app.api.esquemas import PaqueteActualizacion, PaqueteEntrada, PaqueteSalida
-from app.dominio import Destino, NoEncontradoError, Paquete
+from app.dominio import Destino, EstadoPaquete, NoEncontradoError, Paquete
 from app.repositorios import DestinoRepositorio, PaqueteRepositorio
 
 router = APIRouter(prefix="/api/paquetes", tags=["Paquetes"])
+SOLO_ADMIN = [Depends(obtener_administrador_actual)]     # S1, RNF-03
 
 
 class Repos:
@@ -34,7 +35,7 @@ class Repos:
         return PaqueteSalida.desde(paquete, self.paquetes.personas_reservadas(paquete.id), hoy)
 
 
-@router.get("", response_model=list[PaqueteSalida])
+@router.get("", response_model=list[PaqueteSalida], dependencies=SOLO_ADMIN)
 def listar_paquetes(repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
     """Todos los paquetes, en borrador y publicados (vista del administrador)."""
     return [repos.salida(p, hoy) for p in repos.paquetes.listar()]
@@ -46,12 +47,22 @@ def listar_publicados(repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)
     return [repos.salida(p, hoy) for p in repos.paquetes.listar_publicados(hoy)]
 
 
-@router.get("/{id}", response_model=PaqueteSalida)
+@router.get("/publicados/{id}", response_model=PaqueteSalida)
+def obtener_publicado(id: int, repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
+    """Detalle público de un paquete: un borrador no existe para el cliente (S2)."""
+    paquete = repos.buscar(id)
+    if paquete.estado is not EstadoPaquete.PUBLICADO:
+        raise NoEncontradoError("Paquete no encontrado.")
+    return repos.salida(paquete, hoy)
+
+
+@router.get("/{id}", response_model=PaqueteSalida, dependencies=SOLO_ADMIN)
 def obtener_paquete(id: int, repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
     return repos.salida(repos.buscar(id), hoy)
 
 
-@router.post("", response_model=PaqueteSalida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PaqueteSalida, status_code=status.HTTP_201_CREATED,
+             dependencies=SOLO_ADMIN)
 def crear_paquete(datos: PaqueteEntrada, repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
     """FR-05 / FR-06: arma el paquete en borrador; el precio lo calcula el sistema."""
     paquete = Paquete.crear(
@@ -61,7 +72,7 @@ def crear_paquete(datos: PaqueteEntrada, repos: Repos = Depends(), hoy: date = D
     return repos.salida(repos.paquetes.guardar(paquete), hoy)
 
 
-@router.put("/{id}", response_model=PaqueteSalida)
+@router.put("/{id}", response_model=PaqueteSalida, dependencies=SOLO_ADMIN)
 def modificar_paquete(id: int, datos: PaqueteActualizacion, repos: Repos = Depends(),
                       hoy: date = Depends(obtener_hoy)):
     """Modifica un paquete en borrador; uno publicado conserva sus datos y su precio (R7)."""
@@ -72,7 +83,7 @@ def modificar_paquete(id: int, datos: PaqueteActualizacion, repos: Repos = Depen
     return repos.salida(repos.paquetes.guardar(paquete), hoy)
 
 
-@router.post("/{id}/publicar", response_model=PaqueteSalida)
+@router.post("/{id}/publicar", response_model=PaqueteSalida, dependencies=SOLO_ADMIN)
 def publicar_paquete(id: int, repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
     """FR-07: fija el precio con los costos vigentes y deja el paquete disponible para reservas."""
     paquete = repos.buscar(id)
@@ -80,7 +91,7 @@ def publicar_paquete(id: int, repos: Repos = Depends(), hoy: date = Depends(obte
     return repos.salida(repos.paquetes.guardar(paquete), hoy)
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_ADMIN)
 def eliminar_paquete(id: int, repos: Repos = Depends()):
     """Elimina un paquete en borrador. Los publicados se conservan por el historial de reservas (S3)."""
     repos.buscar(id).verificar_editable()

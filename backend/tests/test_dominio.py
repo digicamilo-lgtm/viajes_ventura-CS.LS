@@ -207,3 +207,46 @@ def test_reserva_rechaza_menos_de_una_persona(personas):             # R16
     with pytest.raises(ReglaNegocioError, match="al menos uno"):
         Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=personas,
                       personas_reservadas=0, hoy=date(2026, 11, 1))
+
+
+# --- Usuario, Cliente y Administrador (herencia y polimorfismo, Figura 5) -------
+from app.dominio import Administrador, Usuario  # noqa: E402
+
+
+def test_usuario_es_abstracto():
+    with pytest.raises(TypeError):
+        Usuario("X", "x@x.cl", "hash")
+
+
+def test_solo_el_administrador_puede_gestionar_el_catalogo():          # polimorfismo, S1
+    usuarios = [Cliente("Carolina Reyes", "11111111-1", "c@x.cl", "+569", "hash"),
+                Administrador("Paulina Ovalle", "p@x.cl", "hash")]
+    assert [u.puede_gestionar_catalogo() for u in usuarios] == [False, True]
+    assert all(isinstance(u, Usuario) for u in usuarios)
+
+
+def test_verificar_contrasena_se_hereda_de_usuario():
+    from app.seguridad import hashear
+    admin = Administrador("Paulina Ovalle", "p@x.cl", hashear("clave-segura-1"))
+    assert admin.verificar_contrasena("clave-segura-1") is True
+    assert admin.verificar_contrasena("otra") is False
+
+
+def test_datos_publicos_no_incluyen_rut_ni_telefono():               # R17
+    c = Cliente("Carolina Reyes", "11111111-1", "c@x.cl", "+56911111111", "hash", id=3)
+    assert c.datos_publicos() == {"id": 3, "nombre": "Carolina Reyes", "correo": "c@x.cl"}
+
+
+@pytest.mark.parametrize("rut, normalizado", [
+    ("11111111-1", "11111111-1"), ("11.111.111-1", "11111111-1"), ("111111111", "11111111-1"),
+    ("12.345.678-5", "12345678-5"), ("10.000.013-k", "10000013-K"), ("1-9", "1-9"),
+])
+def test_rut_valido_se_normaliza(rut, normalizado):
+    assert Cliente("C", rut, "c@x.cl", "+569", "hash").rut == normalizado
+
+
+@pytest.mark.parametrize("rut", ["11111111-2", "12345678-K", "abc", "", "123456789-0", "1-"])
+def test_rut_invalido_se_rechaza_sin_repetirlo(rut):                  # R17: el error no expone el dato
+    with pytest.raises(ReglaNegocioError) as error:
+        Cliente("C", rut, "c@x.cl", "+569", "hash")
+    assert rut == "" or rut not in str(error.value)

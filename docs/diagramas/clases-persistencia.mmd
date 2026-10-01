@@ -9,6 +9,7 @@ classDiagram
     +guardar(entidad: T)* T
     +buscar_por_id(id: int)* T
     +listar()* list~T~
+    +transaccion_exclusiva() ContextManager
   }
   class DestinoRepositorio {
     +existe_nombre(nombre: str) bool
@@ -22,6 +23,9 @@ classDiagram
   class ClienteRepositorio {
     +buscar_por_correo(correo: str) Cliente
   }
+  class AdministradorRepositorio {
+    +buscar_por_correo(correo: str) Administrador
+  }
   class ReservaRepositorio {
     +listar_por_cliente(cliente_id: int) list~Reserva~
   }
@@ -30,12 +34,15 @@ classDiagram
   class Paquete
   class Cliente
   class Reserva
+  class Administrador
 
   Repositorio~T~ <|-- DestinoRepositorio
   Repositorio~T~ <|-- PaqueteRepositorio
   Repositorio~T~ <|-- ClienteRepositorio
   Repositorio~T~ <|-- ReservaRepositorio
+  Repositorio~T~ <|-- AdministradorRepositorio
   DestinoRepositorio ..> Destino : persiste
   PaqueteRepositorio ..> Paquete : persiste
   ClienteRepositorio ..> Cliente : persiste
   ReservaRepositorio ..> Reserva : persiste
+  AdministradorRepositorio ..> Administrador : persiste

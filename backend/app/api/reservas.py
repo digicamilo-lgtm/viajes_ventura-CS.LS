@@ -23,13 +23,17 @@ def reservar_paquete(datos: ReservaEntrada, cliente: Cliente = Depends(obtener_c
                      repos: Repos = Depends(), hoy: date = Depends(obtener_hoy)):
     """FR-12 a FR-14: valida que el paquete esté publicado y vigente y que haya cupo, calcula el
     total y registra la reserva. Requiere autenticación (R11)."""
-    paquete = repos.paquetes.buscar_por_id(datos.paquete_id)
-    if paquete is None:
-        raise NoEncontradoError("Paquete no encontrado.")
-    personas_reservadas = repos.paquetes.personas_reservadas(paquete.id)
-    reserva = Reserva.crear(cliente_id=cliente.id, paquete=paquete, cantidad_personas=datos.cantidad_personas,
-                            personas_reservadas=personas_reservadas, hoy=hoy)
-    return ReservaSalida.desde(repos.reservas.guardar(reserva))
+    # Leer el cupo y registrar la reserva en una sola transacción exclusiva: si no, dos reservas
+    # simultáneas ven el mismo cupo libre y ambas se aceptan (sobreventa, R14).
+    with repos.reservas.transaccion_exclusiva():
+        paquete = repos.paquetes.buscar_por_id(datos.paquete_id)
+        if paquete is None:
+            raise NoEncontradoError("Paquete no encontrado.")
+        personas_reservadas = repos.paquetes.personas_reservadas(paquete.id)
+        reserva = Reserva.crear(cliente_id=cliente.id, paquete=paquete, cantidad_personas=datos.cantidad_personas,
+                                personas_reservadas=personas_reservadas, hoy=hoy)
+        guardada = repos.reservas.guardar(reserva)
+    return ReservaSalida.desde(guardada)
 
 
 @router.get("", response_model=list[ReservaSalida])

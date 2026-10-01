@@ -126,3 +126,56 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** el usuario decidió el reparto: **Camilo Sepúlveda** integra los 4 dominios en un flujo único de extremo a extremo y revisa la seguridad del sistema integrado (sección 7.3); **Logan Silva** construye el frontend React/Vite (HU-05) sobre las rutas ya existentes. Se actualizó la sección 4.3 del Informe Técnico (párrafo bajo el Sprint Backlog) y la sección 8 (ítems "Pendiente"), y el README ("Próximos pasos").
 - **Revisión técnica:** el reparto es coherente con quién construyó cada pieza — Camilo hizo el esqueleto compartido en el Cambio 6 y conoce ambos lados de la API; Logan ya tiene clara la autenticación (HU-03) que el frontend tendrá que consumir, pero no construirá él mismo la integración de su propio código (evita que el mismo integrante revise su propio trabajo sin otro par de ojos).
 - **Validación:** se verificó con el validador del skill de docx que el `.docx` no cambió de párrafos (633 → 633) tras los reemplazos de texto puntuales.
+
+## Cambio 9 — Integración de los 4 dominios y revisión de seguridad del sistema integrado (2026-10-01)
+
+- **Objetivo:** cumplir la parte de Camilo del Sprint 2 definida en el Cambio 8: integrar los 4 dominios en un flujo único de punta a punta y revisar la seguridad del sistema integrado (sección 7.3, criterio 4.1.5). También se resolvió el punto «pendiente de decidir» del Cambio 8, la autenticación de administrador.
+- **Implementación:**
+  - **Revisión del código de Logan (Cambio 7):** sigue el mismo patrón por capas y cumple el diseño de la sección 7.1: bcrypt con costo 12, algoritmo JWT fijado, clave en una variable de entorno, mensaje de error genérico y `cliente_id` tomado del token.
+  - **Dos sospechas, demostradas antes de corregirlas** con un script contra el servidor real (uvicorn):
+    - **Sobreventa por concurrencia:** en un paquete con cupo 5, 20 reservas simultáneas de 1 persona se aceptaron todas (cupo −15). La lectura del cupo y la inserción eran pasos separados, y es exactamente la falla del caso que el sistema debía resolver.
+    - **Enumeración de correos por tiempo de respuesta:** un login fallido tardaba 214 ms con un correo registrado y 2 ms con uno inexistente, porque sin correo no se ejecutaba bcrypt.
+  - **Decisión del usuario:** implementar la autenticación de administrador con la herencia del diagrama de clases, en vez de dejar el catálogo abierto como proponía el Cambio 7. Sin ella, cualquiera podía borrar el catálogo sin sesión, y el código no implementaba `Usuario` → `Cliente`/`Administrador`, que el UML (Figura 5) y el criterio 4.1.4 sí exigen.
+  - **Cambios en el código:**
+    - **Herencia del UML:** `Usuario` abstracta con `verificar_contrasena()` y el método abstracto `puede_gestionar_catalogo()`. `Cliente` (de Logan) ahora hereda de `Usuario`, con la misma firma, y suma `datos_publicos()` y la validación del RUT por módulo 11. `Administrador` es nueva.
+    - **Persistencia del administrador:** tabla `administradores` y `AdministradorRepositorio`.
+    - **Rol en el token:** el JWT lleva el rol, se rechaza un token sin rol y se exige una clave de al menos 32 bytes.
+    - **Tiempo constante:** `simular_verificacion()` ejecuta bcrypt aunque el correo no exista.
+    - **Transacción exclusiva:** `Repositorio.transaccion_exclusiva()` (`BEGIN IMMEDIATE`) envuelve la lectura del cupo y la inserción en `POST /api/reservas`.
+    - **Autorización:** dependencias `obtener_usuario_actual`, `obtener_cliente_actual` y `obtener_administrador_actual`; esta última aplica el polimorfismo con `puede_gestionar_catalogo()`. Las rutas que modifican el catálogo exigen administrador (401 sin sesión, 403 con sesión de cliente).
+    - **Rutas nuevas:** `POST /api/administradores/sesiones`, `GET /api/administradores/yo` y `GET /api/paquetes/publicados/{id}` (detalle público que no muestra borradores).
+    - **Comando `python -m app.crear_administrador`:** pide la contraseña con `getpass`, exige 12 caracteres o más y no hay registro público de administradores.
+  - **Pruebas:** de 85 a 129. Se agregaron:
+    - `test_integracion.py`, con el caso completo y sus datos reales;
+    - `test_concurrencia.py`;
+    - `test_api_administradores.py` (autorización en 10 rutas, tiempo constante, comando de consola);
+    - `test_errores.py`;
+    - pruebas de token, de RUT y de herencia y polimorfismo.
+
+    Las pruebas existentes se adaptaron: los helpers del catálogo envían el token de administrador, y las 3 pruebas de token de Logan usan la firma nueva `crear_token(id, rol)`.
+  - **Informe:**
+    - **3.3 y 3.4:** Figura 6 regenerada con `AdministradorRepositorio` y `transaccion_exclusiva()`.
+    - **5.2 y 5.3:** tabla `administradores`, y tabla de rutas con una columna de acceso.
+    - **6:** dos decisiones nuevas.
+    - **7:** sección reescrita como implementación. La 7.1 tiene 3 filas nuevas, la 7.2 una viñeta sobre el RUT, y la 7.3 la tabla de 7 hallazgos con su evidencia antes y después, la checklist y los riesgos aceptados.
+    - **8:** estado actualizado.
+- **Revisión técnica:**
+  - **El análisis estático no bastaba:** Bandit y pip-audit no detectaron ninguna de las dos fallas más graves; solo aparecieron al atacar el servidor en ejecución. Por eso cada hallazgo se demostró con una medición antes de darlo por cierto, y se volvió a medir después de corregirlo.
+  - **Contra la conclusión del Cambio 7:** que ningún FR exija autenticación de administrador no significa que el modelo no la contemple. El supuesto S1, RNF-03, el caso de uso CU-03 (compartido) y la Figura 5 ya la modelaban. Se decidió con el usuario, explicando el riesgo concreto: borrar el catálogo sin sesión.
+  - **Hallazgo latente al diseñar los roles:** con clientes y administradores en tablas distintas, un token con solo el id habría hecho que el cliente 1 actuara como el administrador 1. Por eso el rol es obligatorio en el token, y hay una prueba de ese escenario exacto.
+  - **SonarLint (S6437):** marcó como contraseña comprometida el texto fijo usado para el hash ficticio. Era un falso positivo, pero se cambió por `secrets.token_bytes(32)`, que además impide adivinar ese hash. También se separaron las aserciones compuestas que SonarLint marcó en las pruebas nuevas (S9073).
+  - **Velocidad de las pruebas:** las pruebas bajan el costo de bcrypt a 4 con `monkeypatch`; en producción sigue siendo 12. Por eso el tiempo constante se verifica contando las llamadas a bcrypt y no midiendo milisegundos, que sería una prueba frágil.
+  - **SonarCloud no se ejecutó:** requiere vincular el repositorio a una cuenta. Se usaron Bandit (PyCQA) y pip-audit (PyPA), de PyPI, y se declaró así en el informe en vez de afirmar que se usó SonarCloud.
+- **Validación:**
+  - **Pruebas:** pasan las 129.
+  - **Las pruebas detectan las fallas reales:** se desactivó a propósito cada corrección y fallaron sus pruebas.
+    - Sin la transacción exclusiva, la prueba de concurrencia volvió a aceptar 20 reservas en vez de 5.
+    - Sin la verificación ficticia, falló la prueba de tiempo constante.
+    - Sin la autorización, fallaron 11 pruebas.
+  - **Servidor real, antes → después**, con bcrypt en costo 12:
+    - catálogo sin sesión: 201 → 401;
+    - 20 reservas simultáneas con cupo 5: 20 aceptadas → 5 aceptadas y 15 rechazadas, cupo 0;
+    - login fallido con correo registrado / inexistente: 214 ms / 2 ms → 216 ms / 220 ms.
+  - **Bandit:** 0 hallazgos en 1.270 líneas. Como control positivo, sí detectó una consulta SQL concatenada en un archivo de prueba, lo que confirma que la herramienta funciona.
+  - **pip-audit:** sin vulnerabilidades conocidas.
+  - **Informe:** pasó el validador del skill de docx (633 → 721 párrafos). Se exportaron con Word las páginas 14 y 19 a 26 para revisarlas, se corrigió el ancho de la columna «Severidad» y se actualizó el índice.

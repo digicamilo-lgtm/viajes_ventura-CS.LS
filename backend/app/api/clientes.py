@@ -7,7 +7,7 @@ from app.api.dependencias import obtener_cliente_actual, obtener_conexion
 from app.api.esquemas import ClienteEntrada, ClientePerfil, CredencialesEntrada, TokenSalida
 from app.dominio import Cliente, NoAutenticadoError, ReglaNegocioError
 from app.repositorios import ClienteRepositorio
-from app.seguridad import crear_token, hashear, verificar
+from app.seguridad import crear_token, hashear, simular_verificacion
 
 router = APIRouter(prefix="/api/clientes", tags=["Clientes"])
 
@@ -30,9 +30,12 @@ def registrar_cliente(datos: ClienteEntrada, repo: ClienteRepositorio = Depends(
 def iniciar_sesion(datos: CredencialesEntrada, repo: ClienteRepositorio = Depends(repositorio)):
     """FR-10: autentica por correo y contraseña; mismo mensaje genérico ante cualquier error (sección 7.1)."""
     cliente = repo.buscar_por_correo(datos.correo)
-    if cliente is None or not verificar(datos.contrasena, cliente.hash_contrasena):
+    if cliente is None:
+        simular_verificacion(datos.contrasena)    # mismo tiempo de respuesta: no revela si el correo existe
         raise NoAutenticadoError("Correo o contraseña incorrectos.")
-    return TokenSalida(token=crear_token(cliente.id))
+    if not cliente.verificar_contrasena(datos.contrasena):
+        raise NoAutenticadoError("Correo o contraseña incorrectos.")
+    return TokenSalida(token=crear_token(cliente.id, Cliente.ROL))
 
 
 @router.get("/yo", response_model=ClientePerfil)

@@ -3,12 +3,14 @@ import sqlite3
 
 from fastapi import APIRouter, Depends, status
 
-from app.api.dependencias import obtener_conexion
+from app.api.dependencias import obtener_administrador_actual, obtener_conexion
 from app.api.esquemas import DestinoActualizacion, DestinoEntrada, DestinoSalida, ResultadoBaja
 from app.dominio import Destino, NoEncontradoError, ReglaNegocioError
 from app.repositorios import DestinoRepositorio
 
-router = APIRouter(prefix="/api/destinos", tags=["Destinos"])
+# CU-06 a CU-09: todo el catálogo de destinos es del administrador (S1, RNF-03).
+router = APIRouter(prefix="/api/destinos", tags=["Destinos"],
+                   dependencies=[Depends(obtener_administrador_actual)])
 
 
 def repositorio(conexion: sqlite3.Connection = Depends(obtener_conexion)) -> DestinoRepositorio:
