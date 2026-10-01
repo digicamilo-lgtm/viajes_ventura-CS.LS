@@ -63,3 +63,37 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** se detectó que la sección 4 del `.docx` seguía con el cronograma del repo anterior (Sprint 0 "23-30 sep", entrega "5 oct" calculada desde esas fechas) y con referencias a RNF-05/RNF-06 que ya no corresponden a la numeración vigente desde el Cambio 3. Se confirmó con el usuario que la fecha de entrega sigue siendo el 5 de octubre de 2026, y se descartó y rehizo la sección 4 completa: roles (Logan = Líder de Proyecto + Clientes/seguridad y Reservas; Camilo = Destinos y Paquetes), Product Backlog (HU-01 a HU-05, cubriendo la totalidad de FR-01..FR-15 y RNF-01..RNF-06 sin dejar ninguno sin historia), y Sprint Backlog con el calendario real: Sprint 0 (1 oct, ya completado: requerimientos + modelado), Sprint 1 (2-3 oct: implementación de los 4 dominios), Sprint 2 (4 oct: integración, pruebas, seguridad, cierre del informe), Entrega (5 oct).
 - **Revisión técnica:** el borrador de roles/Product Backlog/Sprint Backlog se presentó al usuario para su aprobación antes de escribirlo en el documento. Se editó el XML del `.docx` igual que en el Cambio 3 (desempaquetado, generación de las tres tablas, reempaquetado), reutilizando los mismos IDs de marcador (bookmark) que ya tenía la sección 4 para no romper el índice.
 - **Validación:** se validó la estructura del `.docx` resultante con el validador del skill de docx (546 párrafos, sin errores de esquema) y se extrajo el texto de la sección 4 para confirmar que las tres tablas quedaron completas y con tildes bien codificadas.
+
+## Cambio 6 — Esqueleto del backend y dominios Destinos (HU-01) y Paquetes (HU-02) (2026-10-01)
+
+- **Objetivo:** iniciar el Paso 4 de la guía (criterio 4.1.4: implementar la solución respetando el modelo UML y los principios de la programación orientada a objetos, con persistencia y CRUD operativo). Según el reparto de la sección 4.1, Camilo implementa el esqueleto compartido y sus dominios, Destinos y Paquetes. Por decisión del usuario, en esta etapa solo se hace el backend: HU-03, HU-04 y el frontend quedan para Logan y el Sprint 2.
+- **Implementación:** en `backend/`, con FastAPI y `sqlite3` de la librería estándar, siguiendo las Figuras 5 y 6 del informe:
+  - **Esquema completo de 5 tablas** (`app/database.py`), con las restricciones de la sección 5.2.
+  - **Clases de dominio** `Destino`, `Paquete` y `EstadoPaquete` (`app/dominio/`):
+    - atributos privados y solo propiedades de lectura;
+    - validación completa antes de asignar, para que un error no deje un objeto a medio modificar;
+    - precio calculado con `Decimal` y fijado al publicar (R6, R7);
+    - baja lógica (R8), cupo calculado (R14, S5) y paquete vencido según la fecha del día (R15).
+  - **Persistencia:** `Repositorio[T]` abstracto, más `DestinoRepositorio` y `PaqueteRepositorio`.
+  - **API:** 12 rutas CRUD (tabla de la sección 5.3) y un manejo de errores centralizado: 400 por regla incumplida, 404, 409 por integridad, 422 sin repetir el valor recibido y 500 sin traza interna.
+  - **Pruebas:** 49 con pytest.
+  - **Informe:** se actualizaron las secciones 5.2, 5.3, 6 (tres decisiones nuevas) y 8 para que describan lo realmente implementado. 5.2 citaba columnas que no existen (`password_hash`, `precio_publicado`) y decía que las reglas se validaban en el router.
+- **Revisión técnica:** decisiones y correcciones hechas durante la implementación.
+  - **Reglas solo en el dominio:** Pydantic valida únicamente tipos y largos, para que ninguna regla quede duplicada en dos capas que puedan contradecirse (RNF-05).
+  - **Campos opcionales:** se detectó y corrigió que reutilizar un mismo `Field(max_length=100)` como valor por defecto volvía obligatorios los campos opcionales de las actualizaciones.
+  - **Margen NaN:** se agregó el rechazo de un margen `NaN` o infinito, porque el JSON de Python los acepta y «margen ≥ 0» no los detecta.
+  - **Ejemplo de float:** el primer ejemplo del informe para justificar `Decimal` era incorrecto, porque 83.001 × 1,15 da exacto en float. Se verificó numéricamente y se reemplazó por el caso real, 83.000 × 1,15 = 95.449,999… Ese caso quedó como prueba.
+  - **`httpx` → `httpx2`:** se cambió porque Starlette marcaba `httpx` como obsoleto en las pruebas.
+  - **Fecha del informe:** se corrigió una fecha («2 de octubre» → 1 de octubre, la fecha real del cambio).
+  - **Pendiente para la integración:** las rutas que modifican el catálogo todavía no exigen autenticación de administrador (S1, RNF-03). Se dejará cuando exista el módulo de seguridad de HU-03. No se agregó un control simulado que aparentara proteger las rutas sin hacerlo.
+- **Validación:**
+  - **Pruebas:** pasan las 49 (`pytest`).
+  - **Las pruebas detectan errores reales:** se rompieron a propósito R7 (que el precio publicado no cambie) y R8 (no borrar un destino usado). En ambos casos fallaron exactamente las pruebas de esa regla. Con R8 roto, la clave foránea de SQLite igualmente bloqueó el borrado (409), lo que confirma la segunda línea de defensa del esquema. Luego se restauró el código.
+  - **Recorrido real con uvicorn**, con los datos del caso:
+    - rechazo del nombre «valle del elqui» por duplicado;
+    - precio de «Norte Grande» = 516.000;
+    - publicación, y el precio se mantiene después de subir el costo del Salar a 400.000;
+    - la baja del Salar lo deja «no disponible».
+
+    Con `curl` de Git Bash los cuerpos con tildes no se enviaban en UTF-8; era un problema del cliente de prueba y se resolvió enviando los JSON desde archivos UTF-8.
+  - **Informe:** pasó el validador del skill de docx (546 → 609 párrafos). Se exportó a PDF con Word para revisar las páginas 18 a 23, y se actualizó el índice.

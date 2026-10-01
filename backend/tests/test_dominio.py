@@ -1,0 +1,129 @@
+"""Pruebas unitarias del modelo de dominio, sin base de datos."""
+from datetime import date
+
+import pytest
+
+from app.dominio import Destino, EstadoPaquete, Paquete, ReglaNegocioError
+
+SALIDA, REGRESO = date(2026, 12, 10), date(2026, 12, 15)
+
+
+def destinos_caso():
+    surire = Destino("Salar de Surire", "Región de Arica y Parinacota", "", 3, 310_000, id=1)
+    elqui = Destino("Valle del Elqui", "Región de Coquimbo", "", 2, 120_000, id=2)
+    return surire, elqui
+
+
+def norte_grande(**cambios):
+    datos = dict(nombre="Norte Grande en 5 días", fecha_salida=SALIDA, fecha_regreso=REGRESO,
+                 cupo_maximo=12, margen=0.20, destinos=list(destinos_caso()))
+    datos.update(cambios)
+    return Paquete.crear(**datos)
+
+
+# --- Destino -------------------------------------------------------------
+@pytest.mark.parametrize("campo, valor", [
+    ("costo_base", 0), ("costo_base", -5), ("duracion_dias", 0), ("costo_base", 10.5), ("nombre", "   "),
+])
+def test_destino_rechaza_datos_invalidos(campo, valor):            # R1, R2
+    datos = dict(nombre="Isla Damas", zona="Coquimbo", descripcion="", duracion_dias=1, costo_base=38_000)
+    datos[campo] = valor
+    with pytest.raises(ReglaNegocioError):
+        Destino(**datos)
+
+
+def test_destino_actualizar_invalido_no_deja_cambios_a_medias():
+    surire, _ = destinos_caso()
+    with pytest.raises(ReglaNegocioError):
+        surire.actualizar({"zona": "Otra zona", "costo_base": 0})
+    assert surire.zona == "Región de Arica y Parinacota" and surire.costo_base == 310_000
+
+
+def test_destino_no_permite_cambiar_disponibilidad_por_actualizar():
+    surire, _ = destinos_caso()
+    with pytest.raises(ReglaNegocioError):
+        surire.actualizar({"disponible": False})
+    surire.marcar_no_disponible()                                    # R8
+    assert surire.disponible is False
+
+
+# --- Paquete: creación y precio -----------------------------------------
+def test_precio_es_suma_de_costos_mas_margen():                     # R6, FR-06
+    assert norte_grande().precio_por_persona == 516_000              # (310.000 + 120.000) × 1,20
+
+
+def test_precio_redondea_a_pesos_enteros():                          # S6
+    cajon = Destino("Cajón del Maipo", "RM", "", 1, 45_000, id=3)
+    damas = Destino("Isla Damas", "Coquimbo", "", 1, 38_001, id=4)
+    paquete = norte_grande(destinos=[cajon, damas], margen=0.15)
+    assert paquete.precio_por_persona == 95_451                      # 83.001 × 1,15 = 95.451,15
+
+
+def test_precio_no_pierde_un_peso_por_error_de_float():              # S6
+    cajon = Destino("Cajón del Maipo", "RM", "", 1, 45_000, id=3)
+    damas = Destino("Isla Damas", "Coquimbo", "", 1, 38_000, id=4)
+    # En float, 83.000 × 1,15 = 95449.99999999999; truncarlo cobraría 95.449.
+    assert norte_grande(destinos=[cajon, damas], margen=0.15).precio_por_persona == 95_450
+
+
+@pytest.mark.parametrize("cambios, mensaje", [
+    ({"destinos": [destinos_caso()[0]]}, "entre 2 y 5"),                               # R3
+    ({"destinos": [Destino(f"D{i}", "Z", "", 1, 1_000, id=i) for i in range(10, 16)]}, "entre 2 y 5"),
+    ({"destinos": [destinos_caso()[0], destinos_caso()[0]]}, "repetir"),              # R3
+    ({"fecha_regreso": SALIDA}, "posterior"),                                          # R5
+    ({"cupo_maximo": 0}, "cupo"),                                                      # R5
+    ({"margen": -0.1}, "negativo"),                                                    # R6
+    ({"margen": float("nan")}, "negativo"),
+])
+def test_paquete_rechaza_reglas_incumplidas(cambios, mensaje):
+    with pytest.raises(ReglaNegocioError, match=mensaje):
+        norte_grande(**cambios)
+
+
+def test_paquete_nuevo_no_admite_destinos_no_disponibles():         # R8
+    surire, elqui = destinos_caso()
+    elqui.marcar_no_disponible()
+    with pytest.raises(ReglaNegocioError, match="no disponibles"):
+        norte_grande(destinos=[surire, elqui])
+
+
+# --- Paquete: publicación (R7) ------------------------------------------
+def test_publicar_fija_el_precio_ante_cambios_de_costo():           # R7, FR-07
+    surire, elqui = destinos_caso()
+    borrador = norte_grande(destinos=[surire, elqui])
+    publicado = norte_grande(destinos=[surire, elqui])
+    publicado.publicar()
+
+    surire.actualizar({"costo_base": 400_000})
+
+    assert publicado.estado is EstadoPaquete.PUBLICADO
+    assert publicado.precio_por_persona == 516_000       # conserva el precio publicado
+    assert borrador.precio_por_persona == 624_000        # el borrador sigue los costos vigentes
+
+
+def test_paquete_publicado_no_se_modifica_ni_se_publica_dos_veces():
+    paquete = norte_grande()
+    paquete.publicar()
+    with pytest.raises(ReglaNegocioError):
+        paquete.publicar()
+    with pytest.raises(ReglaNegocioError):
+        paquete.modificar({"cupo_maximo": 20})
+
+
+def test_modificar_valida_todo_antes_de_asignar():
+    paquete = norte_grande()
+    with pytest.raises(ReglaNegocioError):
+        paquete.modificar({"nombre": "Otro", "cupo_maximo": -1})
+    assert paquete.nombre == "Norte Grande en 5 días"
+
+
+# --- Paquete: cupo y vencimiento -----------------------------------------
+def test_cupo_disponible_descuenta_personas_reservadas():           # R14, FR-08
+    assert norte_grande().cupo_disponible(personas_reservadas=5) == 7
+
+
+@pytest.mark.parametrize("hoy, vencido", [
+    (date(2026, 12, 9), False), (date(2026, 12, 10), False), (date(2026, 12, 11), True),
+])
+def test_esta_vencido_compara_con_la_fecha_del_dia(hoy, vencido):   # R15
+    assert norte_grande().esta_vencido(hoy) is vencido
