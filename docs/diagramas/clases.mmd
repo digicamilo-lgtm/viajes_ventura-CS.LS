@@ -1,0 +1,71 @@
+%% Diagrama de clases UML — Viajes Aventura: modelo de dominio
+%% Render: mmdc -i clases.mmd -o clases.png -c config.json -s 2 -b white
+classDiagram
+  direction TB
+
+  class Usuario {
+    <<abstract>>
+    -id: int
+    -nombre: str
+    -correo: str
+    -hash_contrasena: str
+    +verificar_contrasena(contrasena: str) bool
+    +puede_gestionar_catalogo()* bool
+  }
+  class Cliente {
+    -rut: str
+    -telefono: str
+    +puede_gestionar_catalogo() bool
+    +datos_publicos() dict
+  }
+  class Administrador {
+    +puede_gestionar_catalogo() bool
+  }
+
+  class Destino {
+    -id: int
+    -nombre: str
+    -zona: str
+    -descripcion: str
+    -duracion_dias: int
+    -costo_base: int
+    -disponible: bool
+    +actualizar(datos: dict) None
+    +marcar_no_disponible() None
+  }
+  class Paquete {
+    -id: int
+    -nombre: str
+    -fecha_salida: date
+    -fecha_regreso: date
+    -cupo_maximo: int
+    -margen: float
+    -precio_por_persona: int
+    -estado: EstadoPaquete
+    +calcular_precio() int
+    +publicar() None
+    +cupo_disponible(personas_reservadas: int) int
+    +esta_vencido(hoy: date) bool
+  }
+  class EstadoPaquete {
+    <<enumeration>>
+    BORRADOR
+    PUBLICADO
+  }
+  class Reserva {
+    -id: int
+    -fecha_emision: datetime
+    -cantidad_personas: int
+    -total: int
+    +crear(cliente: Cliente, paquete: Paquete, personas: int, hoy: date)$ Reserva
+  }
+
+  Usuario <|-- Cliente
+  Usuario <|-- Administrador
+  Paquete "0..*" o-- "2..5" Destino : combina
+  Paquete --> "1" EstadoPaquete : estado
+  Cliente "1" --> "0..*" Reserva : realiza
+  Reserva "0..*" --> "1" Paquete : sobre
+  Administrador ..> Destino : gestiona
+  Administrador ..> Paquete : arma y publica
+

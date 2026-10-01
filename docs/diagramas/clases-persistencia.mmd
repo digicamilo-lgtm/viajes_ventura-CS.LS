@@ -1,0 +1,41 @@
+%% Diagrama de clases UML — Viajes Aventura: capa de persistencia (SQLite)
+%% Render: mmdc -i clases-persistencia.mmd -o clases-persistencia.png -c config.json -s 2 -b white
+classDiagram
+  direction TB
+
+  class Repositorio~T~ {
+    <<abstract>>
+    #conexion: sqlite3.Connection
+    +guardar(entidad: T)* T
+    +buscar_por_id(id: int)* T
+    +listar()* list~T~
+  }
+  class DestinoRepositorio {
+    +existe_nombre(nombre: str) bool
+    +esta_en_algun_paquete(id: int) bool
+    +eliminar(id: int) None
+  }
+  class PaqueteRepositorio {
+    +listar_publicados() list~Paquete~
+    +personas_reservadas(id: int) int
+  }
+  class ClienteRepositorio {
+    +buscar_por_correo(correo: str) Cliente
+  }
+  class ReservaRepositorio {
+    +listar_por_cliente(cliente_id: int) list~Reserva~
+  }
+
+  class Destino
+  class Paquete
+  class Cliente
+  class Reserva
+
+  Repositorio~T~ <|-- DestinoRepositorio
+  Repositorio~T~ <|-- PaqueteRepositorio
+  Repositorio~T~ <|-- ClienteRepositorio
+  Repositorio~T~ <|-- ReservaRepositorio
+  DestinoRepositorio ..> Destino : persiste
+  PaqueteRepositorio ..> Paquete : persiste
+  ClienteRepositorio ..> Cliente : persiste
+  ReservaRepositorio ..> Reserva : persiste

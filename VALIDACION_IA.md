@@ -31,3 +31,28 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** se leyó `TI3021_U4_ES_GUÍA.pdf` y `POO-TI3V21-Caso-Viajes-Aventura.pdf` (reglas de negocio R1-R17 y alcance del caso), y se redactó desde cero la sección 2 del Informe Técnico: 15 requerimientos funcionales (FR-01 a FR-15), 6 no funcionales (RNF-01 a RNF-06) y una tabla de verificación contra las fallas medibles del caso (duplicados, sobreventa de cupo, fechas vencidas, precios inconsistentes, datos sensibles expuestos). El contenido anterior de esa sección se descartó.
 - **Revisión técnica:** se presentó el borrador de FR/RNF al usuario para su revisión antes de escribirlo en el documento; se editó directamente el XML del `.docx` (desempaquetado/reempaquetado) y se validó la estructura con el validador del skill de docx (conteo de párrafos, XML bien formado) antes de reemplazar el archivo.
 - **Validación:** se extrajo el texto del `.docx` resultante para confirmar que tildes y ñ quedaron bien codificados y que las tres tablas (FR, RNF, verificación) se insertaron completas. Antes de comitear, se leyó el contenido real de `rubrica 4.xlsx` (resultó ser la Rúbrica N°2 completa, con indicadores 4.1.1.G.1 a G.4 para el levantamiento de requerimientos) y se contrastó el levantamiento contra esos indicadores, confirmando que cubre el nivel Experto (cobertura exhaustiva, prioridad con criterio explícito, redacción con trazabilidad, verificación de alineación total con el problema). De paso se detectó que `Rubrica 2 y 3.pdf` no correspondía a este proyecto (era la rúbrica de otra evaluación, sobre consumo de APIs externas) y se eliminó del repo; se agregó `~$*` a `.gitignore` para evitar que los archivos temporales de bloqueo de Office (ej. `~$rubrica 4.xlsx`) se cuelen en commits futuros.
+
+## Cambio 4 — Modelamiento de la solución con UML y BPMN (sección 3 del Informe Técnico) (2026-10-01)
+
+- **Objetivo:** completar el Paso 2 de la guía de evaluación (criterio 4.1.2, indicadores 4.1.2.G.5 a G.7 e I.8 de `rubrica 4.xlsx`): modelar actores, actividades y procesos con BPMN, desarrollar el diagrama de casos de uso, elaborar el diagrama de clases UML con atributos, métodos y relaciones, y validar la trazabilidad entre requerimientos y modelos. Igual que en el Cambio 3, se rehízo desde cero: la sección 3 que traía el `.docx` (2 BPMN, casos de uso y clases del repo anterior, con referencias a `backend/app/database.py`, que ya no existe) se descartó.
+- **Implementación:** la IA construyó los modelos a partir de FR-01..FR-15 y RNF-01..RNF-06 y los dejó como fuentes editables en `docs/diagramas/`:
+  - **6 supuestos declarados (S1-S6)** para los vacíos que el propio caso pide cubrir: quién modifica el catálogo, qué pasa con un paquete cuya temporada terminó, desistimiento de reservas, estado borrador/publicado, cupo calculado y montos en CLP enteros.
+  - **3 BPMN** (pool con carriles Administrador/Cliente y Sistema, eventos, compuertas XOR y almacén de datos): gestión de destinos (FR-01..04), armado y publicación de paquete (FR-05..07) y registro/autenticación/reserva (FR-08..15).
+  - **Casos de uso:** 13 casos (CU-01..CU-13), 2 actores y relaciones «include» justificadas por R11, FR-06, FR-13 y FR-14, con una tabla de detalle.
+  - **Clases en dos vistas:** dominio (`Usuario` abstracta → `Cliente`/`Administrador`, `Destino`, `Paquete`, `EstadoPaquete`, `Reserva`) y persistencia (`Repositorio<T>` abstracta + 4 repositorios SQLite).
+  - **Matriz de trazabilidad** de los 21 requerimientos (BPMN → caso de uso → clase/método).
+
+  Se reconstruyó la sección 3 del `.docx` (texto, 6 figuras y 3 tablas) y se actualizó el resumen de la sección 8.
+- **Revisión técnica:**
+  - **Herramienta de los BPMN:** el primer intento con Mermaid se descartó, porque Mermaid no tiene notación BPMN: dibujaba los carriles lado a lado y los flujos cruzaban el diagrama completo. En su lugar se escribió `generar_bpmn.py`, que dibuja la notación BPMN real en una grilla controlada. Cada diagrama se renderizó y se revisó visualmente, iterando hasta que ningún flujo atravesara un nodo.
+  - **Casos de uso:** lo mismo se hizo con el diagrama de casos de uso. Las asociaciones cruzaban elipses ajenas y se corrigió anclándolas a los extremos de cada elipse.
+  - **Diagrama de clases:** se dividió en dos figuras porque en una sola quedaba ilegible.
+  - **Diseño orientado a objetos:** el modelo se diseñó pensando en el criterio 4.1.4 (implementar el UML aplicando encapsulamiento, herencia, polimorfismo y abstracción):
+    - El precio y el total no tienen métodos de asignación (R7, R13).
+    - `puede_gestionar_catalogo()` se resuelve por polimorfismo (RNF-03).
+    - `Reserva.crear()` concentra R14 a R16.
+  - **Correcciones de paso:** la sección 8 decía «7 no funcionales» y son 6, así que se corrigió. La sección 5.2 todavía describe `backend/app/database.py` y «cinco tablas». No se tocó porque corresponde al Paso 4 (persistencia) y debe reescribirse junto con el código.
+- **Validación:**
+  - **Estructura del `.docx`:** pasó el validador del skill de docx (esquema XSD, 383 → 550 párrafos).
+  - **Revisión visual:** se exportó a PDF con Microsoft Word y se revisaron página por página las 6 figuras, las tablas y los saltos de sección (los BPMN van en páginas horizontales). Word también actualizó el índice: 3.1 en p. 7, 3.2 en p. 11, 3.3 en p. 13 y 3.4 en p. 15.
+  - **Trazabilidad:** se verificó que los 15 FR aparecen en un BPMN, en un caso de uso y en una clase o método, y que ningún caso de uso ni clase carece de origen. RNF-06 (navegador web) es el único sin elemento de modelo propio, y así se declara en el informe.
