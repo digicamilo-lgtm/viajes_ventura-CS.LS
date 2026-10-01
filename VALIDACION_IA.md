@@ -119,3 +119,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
   - **Prueba de extremo a extremo fuera de pytest:** se levantó la app con `TestClient` fuera de la suite de pruebas y se ejecutó a mano el flujo registrar → iniciar sesión → consultar `/api/clientes/yo` con el token, más `GET /docs`, confirmando que el candado de autenticación aparece en la documentación interactiva.
   - **Aislamiento entre clientes:** una prueba de API registra a dos clientes distintos, cada uno reserva, y verifica que el historial de uno no incluye la reserva del otro (R11).
   - **Informe:** pasó el validador del skill de docx (609 → 633 párrafos).
+
+## Cambio 8 — Reparto del Sprint 2 (2026-10-01)
+
+- **Objetivo:** el Sprint Backlog (Cambio 5) dejaba el Sprint 2 sin repartir entre los integrantes ("el equipo" de forma genérica); con los 4 dominios ya implementados (Cambio 6 y Cambio 7), había que decidir quién integra, quién revisa seguridad y quién construye el frontend antes de seguir.
+- **Implementación:** el usuario decidió el reparto: **Camilo Sepúlveda** integra los 4 dominios en un flujo único de extremo a extremo y revisa la seguridad del sistema integrado (sección 7.3); **Logan Silva** construye el frontend React/Vite (HU-05) sobre las rutas ya existentes. Se actualizó la sección 4.3 del Informe Técnico (párrafo bajo el Sprint Backlog) y la sección 8 (ítems "Pendiente"), y el README ("Próximos pasos").
+- **Revisión técnica:** el reparto es coherente con quién construyó cada pieza — Camilo hizo el esqueleto compartido en el Cambio 6 y conoce ambos lados de la API; Logan ya tiene clara la autenticación (HU-03) que el frontend tendrá que consumir, pero no construirá él mismo la integración de su propio código (evita que el mismo integrante revise su propio trabajo sin otro par de ojos).
+- **Validación:** se verificó con el validador del skill de docx que el `.docx` no cambió de párrafos (633 → 633) tras los reemplazos de texto puntuales.

@@ -54,16 +54,16 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 7 — dominios Clientes y seguridad (HU-03) y Reservas (HU-04) (2026-10-01).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 8 — reparto del Sprint 2 (2026-10-01).
 
 ## Próximos pasos
 
 1. ~~Levantar requerimientos a partir del caso de estudio.~~ ✅ hecho (Cambio 3).
 2. ~~Modelar la solución (BPMN, casos de uso, diagrama de clases UML).~~ ✅ hecho (Cambio 4).
 3. ~~Definir metodología ágil (roles, Product Backlog, Sprint Backlog).~~ ✅ hecho (Cambio 5).
-4. Implementar por dominios (backend + frontend) y seguridad (autenticación) — Sprint 1, 2-3 de octubre.
-   - ~~Esqueleto compartido + HU-01 Destinos + HU-02 Paquetes (Camilo).~~ ✅ hecho (Cambio 6).
-   - ~~HU-03 Clientes y seguridad + HU-04 Reservas (Logan).~~ ✅ hecho (Cambio 7).
-   - Decidir si se agrega autenticación de administrador para las rutas de catálogo (no la exige ningún FR; ver Cambio 7).
-   - Frontend React/Vite.
-5. Sprint 2 (4 oct): integrar los 4 dominios en un flujo único de extremo a extremo, revisión de seguridad (sección 7.3), cierre del informe.
+4. ~~Implementar por dominios: esqueleto + HU-01 + HU-02 (Camilo, Cambio 6); HU-03 + HU-04 (Logan, Cambio 7).~~ ✅ hecho.
+5. Sprint 2 (4 oct):
+   - **Camilo:** integrar los 4 dominios en un flujo único de extremo a extremo y revisar la seguridad del sistema integrado (sección 7.3).
+   - **Logan:** frontend React/Vite (HU-05) sobre las rutas ya existentes.
+   - Pendiente de decidir: autenticación de administrador para las rutas de catálogo (no la exige ningún FR; ver Cambio 7).
+   - Defensa argumentativa individual de cada integrante.
