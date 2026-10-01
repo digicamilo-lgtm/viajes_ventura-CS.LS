@@ -15,7 +15,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 ## Trazabilidad
 
-`VALIDACION_IA.md` registra cada cambio hecho con apoyo de IA (objetivo, implementación, revisión técnica y validación).
+`VALIDACION_IA.md` registra cada cambio hecho con apoyo de IA (objetivo, implementación, revisión técnica y validación). Este README se actualiza en cada cambio. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar README + VALIDACION_IA en cada cambio, antes de hacer commit. Último cambio: Cambio 1 — reinicio del proyecto desde cero (2026-10-01).
 
 ## Próximos pasos
 
