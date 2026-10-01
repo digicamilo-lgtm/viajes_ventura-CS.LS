@@ -4,3 +4,7 @@ class ReglaNegocioError(Exception):
 
 class NoEncontradoError(Exception):
     """La entidad pedida no existe."""
+
+
+class NoAutenticadoError(Exception):
+    """Falta un token de sesión válido, o las credenciales no coinciden (R10, R11)."""

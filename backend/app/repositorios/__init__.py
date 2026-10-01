@@ -1,6 +1,9 @@
 """Capa de persistencia (diagrama de clases, Figura 6 del Informe Técnico)."""
 from app.repositorios.base import Repositorio
+from app.repositorios.cliente_repositorio import ClienteRepositorio
 from app.repositorios.destino_repositorio import DestinoRepositorio
 from app.repositorios.paquete_repositorio import PaqueteRepositorio
+from app.repositorios.reserva_repositorio import ReservaRepositorio
 
-__all__ = ["DestinoRepositorio", "PaqueteRepositorio", "Repositorio"]
+__all__ = ["ClienteRepositorio", "DestinoRepositorio", "PaqueteRepositorio", "Repositorio",
+           "ReservaRepositorio"]

@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from app.dominio import Destino, EstadoPaquete, Paquete, ReglaNegocioError
+from app.dominio import Cliente, Destino, EstadoPaquete, Paquete, ReglaNegocioError, Reserva
 
 SALIDA, REGRESO = date(2026, 12, 10), date(2026, 12, 15)
 
@@ -127,3 +127,83 @@ def test_cupo_disponible_descuenta_personas_reservadas():           # R14, FR-08
 ])
 def test_esta_vencido_compara_con_la_fecha_del_dia(hoy, vencido):   # R15
     assert norte_grande().esta_vencido(hoy) is vencido
+
+
+# --- Cliente ---------------------------------------------------------------
+def test_cliente_normaliza_el_correo():                             # R9
+    c = Cliente("Carolina Reyes", "11111111-1", "  Carolina@Example.COM ", "+56911111111", "hash-x")
+    assert c.correo == "carolina@example.com"
+
+
+@pytest.mark.parametrize("campo, valor", [
+    ("nombre", "   "), ("rut", ""), ("correo", "no-es-un-correo"), ("telefono", ""),
+])
+def test_cliente_rechaza_datos_invalidos(campo, valor):              # R9
+    datos = dict(nombre="Carolina Reyes", rut="11111111-1", correo="carolina@example.com",
+                 telefono="+56911111111", hash_contrasena="hash-x")
+    datos[campo] = valor
+    with pytest.raises(ReglaNegocioError):
+        Cliente(**datos)
+
+
+def test_cliente_nunca_guarda_la_contrasena_en_texto_plano():        # R10
+    # El dominio solo exige que llegue ya hasheada; hashear la contraseña es responsabilidad
+    # de app.seguridad (ver test_seguridad.py), nunca del objeto Cliente.
+    c = Cliente("Carolina Reyes", "11111111-1", "carolina@example.com", "+56911111111", "$2b$12$...")
+    assert c.hash_contrasena != "clave-en-texto-plano"
+
+
+# --- Reserva ---------------------------------------------------------------
+def publicado(**cambios):
+    """Un paquete publicado con id (como lo devolvería el repositorio tras guardarlo)."""
+    datos = dict(nombre="Norte Grande en 5 días", fecha_salida=SALIDA, fecha_regreso=REGRESO,
+                 cupo_maximo=12, margen=0.20, destinos=list(destinos_caso()))
+    datos.update(cambios)
+    p = Paquete(id=100, **datos)
+    p.publicar()
+    return p
+
+
+def test_reserva_calcula_el_total_al_momento_de_reservar():          # R12, R13
+    paquete = publicado()
+    reserva = Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=2,
+                            personas_reservadas=0, hoy=date(2026, 11, 1))
+    assert reserva.total == 1_032_000             # 516.000 × 2
+    assert reserva.fecha_emision == date(2026, 11, 1)
+
+
+def test_reserva_no_cambia_si_el_precio_del_paquete_cambia_despues():  # R13, R7
+    paquete = publicado()
+    reserva = Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=1,
+                            personas_reservadas=0, hoy=date(2026, 11, 1))
+    paquete.destinos[0].actualizar({"costo_base": 999_999})
+    assert reserva.total == 516_000               # no vuelve a calcularse
+
+
+def test_reserva_rechaza_paquete_no_publicado():                     # FR-12
+    borrador = norte_grande()
+    with pytest.raises(ReglaNegocioError, match="publicado"):
+        Reserva.crear(cliente_id=1, paquete=borrador, cantidad_personas=1,
+                      personas_reservadas=0, hoy=date(2026, 11, 1))
+
+
+def test_reserva_rechaza_paquete_vencido():                          # R15
+    paquete = publicado()
+    with pytest.raises(ReglaNegocioError, match="ya pasó"):
+        Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=1,
+                      personas_reservadas=0, hoy=date(2026, 12, 11))
+
+
+def test_reserva_rechaza_si_supera_el_cupo_disponible():             # R14
+    paquete = publicado(cupo_maximo=5)
+    with pytest.raises(ReglaNegocioError, match="cupo"):
+        Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=3,
+                      personas_reservadas=3, hoy=date(2026, 11, 1))
+
+
+@pytest.mark.parametrize("personas", [0, -1])
+def test_reserva_rechaza_menos_de_una_persona(personas):             # R16
+    paquete = publicado()
+    with pytest.raises(ReglaNegocioError, match="al menos uno"):
+        Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=personas,
+                      personas_reservadas=0, hoy=date(2026, 11, 1))

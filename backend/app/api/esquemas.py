@@ -8,9 +8,11 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from app.dominio import Destino, EstadoPaquete, Paquete
+from app.dominio import Cliente, Destino, EstadoPaquete, Paquete, Reserva
 
 Texto = Annotated[str, Field(max_length=100)]
+# bcrypt ignora cualquier byte más allá del 72; se limita aquí para no truncar en silencio.
+Contrasena = Annotated[str, Field(min_length=8, max_length=72)]
 
 
 # --- Destinos ------------------------------------------------------------
@@ -101,3 +103,62 @@ class PaqueteSalida(BaseModel):
             destinos=[DestinoEnPaquete(id=d.id, nombre=d.nombre, zona=d.zona, costo_base=d.costo_base)
                       for d in p.destinos],
         )
+
+
+# --- Clientes --------------------------------------------------------------
+class ClienteEntrada(BaseModel):
+    nombre: Texto
+    rut: Texto
+    correo: Texto
+    telefono: Texto
+    contrasena: Contrasena
+
+
+class ClienteSalida(BaseModel):
+    """Vista pública (R17): nunca incluye RUT ni teléfono."""
+    id: int
+    nombre: str
+    correo: str
+
+    @classmethod
+    def desde(cls, c: Cliente) -> "ClienteSalida":
+        return cls(id=c.id, nombre=c.nombre, correo=c.correo)
+
+
+class ClientePerfil(ClienteSalida):
+    """Solo para el propio cliente autenticado (registro y GET /api/clientes/yo); incluye RUT y teléfono."""
+    rut: str
+    telefono: str
+
+    @classmethod
+    def desde(cls, c: Cliente) -> "ClientePerfil":
+        return cls(id=c.id, nombre=c.nombre, correo=c.correo, rut=c.rut, telefono=c.telefono)
+
+
+class CredencialesEntrada(BaseModel):
+    correo: Texto
+    contrasena: Annotated[str, Field(max_length=72)]
+
+
+class TokenSalida(BaseModel):
+    token: str
+    tipo: Literal["bearer"] = "bearer"
+
+
+# --- Reservas ----------------------------------------------------------------
+class ReservaEntrada(BaseModel):
+    paquete_id: int
+    cantidad_personas: int = Field(ge=1)          # R16
+
+
+class ReservaSalida(BaseModel):
+    id: int
+    paquete_id: int
+    fecha_emision: date
+    cantidad_personas: int
+    total: int
+
+    @classmethod
+    def desde(cls, r: Reserva) -> "ReservaSalida":
+        return cls(id=r.id, paquete_id=r.paquete_id, fecha_emision=r.fecha_emision,
+                   cantidad_personas=r.cantidad_personas, total=r.total)

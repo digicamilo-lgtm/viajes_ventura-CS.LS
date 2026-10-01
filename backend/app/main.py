@@ -13,9 +13,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import destinos, paquetes
+from app.api import clientes, destinos, paquetes, reservas
 from app.database import conectar, crear_esquema
-from app.dominio import NoEncontradoError, ReglaNegocioError
+from app.dominio import NoAutenticadoError, NoEncontradoError, ReglaNegocioError
 
 log = logging.getLogger("viajes_aventura")
 STATIC = Path(__file__).resolve().parent.parent / "static"
@@ -34,6 +34,8 @@ async def ciclo_de_vida(app: FastAPI):
 app = FastAPI(title="Viajes Aventura API", version="0.1.0", lifespan=ciclo_de_vida)
 app.include_router(destinos.router)
 app.include_router(paquetes.router)
+app.include_router(clientes.router)
+app.include_router(reservas.router)
 
 
 # --- Manejo de errores: nunca se expone una traza interna (sección 7.3) ---
@@ -45,6 +47,11 @@ async def regla_negocio(_: Request, exc: ReglaNegocioError):
 @app.exception_handler(NoEncontradoError)
 async def no_encontrado(_: Request, exc: NoEncontradoError):
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)})
+
+
+@app.exception_handler(NoAutenticadoError)
+async def no_autenticado(_: Request, exc: NoAutenticadoError):
+    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": str(exc)})
 
 
 @app.exception_handler(RequestValidationError)
