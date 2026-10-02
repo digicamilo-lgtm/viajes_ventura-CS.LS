@@ -10,8 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.api import administradores, clientes, destinos, paquetes, reservas
 from app.database import conectar, crear_esquema
@@ -82,6 +81,16 @@ async def error_interno(_: Request, exc: Exception):
                         content={"detail": "Error interno del servidor."})
 
 
-# Build del frontend (sección 5.1): se monta al final para no tapar las rutas /api.
+# Build del frontend (sección 5.1): se registra al final para no tapar las rutas /api.
+# No se usa StaticFiles(html=True) solo: esa clase sirve index.html en "/", pero
+# responde 404 ante una ruta propia del router de React (ej. /admin, /paquetes/3)
+# porque no existe un archivo con ese nombre. El comodín de abajo sirve el archivo
+# estático si existe (JS, CSS, íconos) y si no, entrega index.html para que
+# react-router resuelva la ruta en el navegador.
 if STATIC.is_dir():
-    app.mount("/", StaticFiles(directory=STATIC, html=True), name="frontend")
+    @app.get("/{ruta_spa:path}", include_in_schema=False)
+    async def servir_frontend(ruta_spa: str):
+        archivo = STATIC / ruta_spa
+        if ruta_spa and archivo.is_file():
+            return FileResponse(archivo)
+        return FileResponse(STATIC / "index.html")

@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** Informe Técnico Grupal en elaboración (`Informe_Tecnico_Viajes_Aventura.docx`) — secciones 2 (requerimientos funcionales y no funcionales), 3 (modelamiento UML/BPMN) y 4 (metodología ágil) completas. Backend completo, integrado y con revisión de seguridad (129 pruebas): Destinos (HU-01) y Paquetes (HU-02) de Camilo; Clientes y seguridad (HU-03) y Reservas (HU-04) de Logan; integración, autenticación de administrador y revisión de seguridad (sección 7.3) de Camilo. Falta el frontend.
+**Estado:** Sistema completo — Informe Técnico Grupal (todas las secciones), backend (129 pruebas) y frontend React/Vite, probado de punta a punta con un navegador real. Destinos (HU-01) y Paquetes (HU-02), integración y seguridad: Camilo Sepúlveda. Clientes y seguridad (HU-03), Reservas (HU-04) y frontend (HU-05): Logan Silva. Pendiente: defensa argumentativa individual.
 
 ## Material de referencia
 
@@ -48,6 +48,23 @@ Para agregar un dominio nuevo: crear la clase en `app/dominio/`, su repositorio 
 
 Análisis estático (sección 7.3 del informe): `.venv\Scripts\python -m pip install bandit pip-audit`, luego `.venv\Scripts\python -m bandit -r app` y `.venv\Scripts\python -m pip_audit -r requirements.txt`.
 
+## Frontend (React + Vite)
+
+Estructura de `frontend/src/`, arquitectura de la sección 5.1 del Informe Técnico:
+
+- `api.js` — cliente HTTP a `/api` (agrega el token `Authorization: Bearer` cuando corresponde).
+- `auth.jsx` — contexto de sesión (React Context + `localStorage`): guarda `{ token, rol, perfil }`; el rol siempre sale de lo que el backend valida al iniciar sesión, nunca se simula en el frontend.
+- `pages/` — `Catalogo`, `PaqueteDetalle` (pública); `ClienteRegistro`, `ClienteLogin`, `MisReservas` (cliente); `AdminLogin`, `AdminDestinos`, `AdminPaquetes` (administrador).
+
+Instalar y ejecutar (desde `frontend/`, con el backend ya corriendo en `:8000`):
+
+```
+npm install
+npm run dev      # http://localhost:5173, con proxy /api -> :8000
+```
+
+Para la entrega: `npm run build` compila directamente a `backend/static/` (configurado en `vite.config.js`); luego `uvicorn app.main:app` sirve todo desde `:8000`, un único comando. Para probar el flujo completo hace falta al menos un administrador (`python -m app.crear_administrador`) y un destino/paquete publicado antes de que el catálogo público muestre algo.
+
 ## Diagramas
 
 `docs/diagramas/` contiene las fuentes editables y las imágenes de los diagramas de la sección 3 del Informe Técnico:
@@ -60,7 +77,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 9 — integración de los 4 dominios y revisión de seguridad del sistema integrado (2026-10-01).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 10 — frontend React/Vite, probado de punta a punta (2026-10-01).
 
 ## Próximos pasos
 
@@ -68,8 +85,8 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 2. ~~Modelar la solución (BPMN, casos de uso, diagrama de clases UML).~~ ✅ hecho (Cambio 4).
 3. ~~Definir metodología ágil (roles, Product Backlog, Sprint Backlog).~~ ✅ hecho (Cambio 5).
 4. ~~Implementar por dominios: esqueleto + HU-01 + HU-02 (Camilo, Cambio 6); HU-03 + HU-04 (Logan, Cambio 7).~~ ✅ hecho.
-5. Sprint 2 (4 oct):
-   - ~~**Camilo:** integrar los 4 dominios en un flujo único de extremo a extremo y revisar la seguridad del sistema integrado (sección 7.3).~~ ✅ hecho (Cambio 9).
-   - ~~Decidir la autenticación de administrador para las rutas de catálogo.~~ ✅ implementada (Cambio 9).
-   - **Logan:** frontend React/Vite (HU-05). El frontend debe iniciar sesión de administrador para las pantallas del catálogo, y usar `GET /api/paquetes/publicados` y `/publicados/{id}` para la vista del cliente.
+5. ~~Sprint 2: integración + seguridad (Camilo, Cambio 9); frontend React/Vite (Logan, Cambio 10).~~ ✅ hecho. Sistema completo, de punta a punta.
+6. Pendiente antes de la entrega (5 oct):
+   - Crear las cuentas de los tres socios con `python -m app.crear_administrador` al instalar el sistema (no quedan en el repositorio por diseño, S1).
+   - Opcional: ejecutar SonarCloud sobre el repositorio (sección 7.3), pendiente por requerir vincular una cuenta.
    - Defensa argumentativa individual de cada integrante.
