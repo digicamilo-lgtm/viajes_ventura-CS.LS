@@ -14,7 +14,9 @@ def test_hashear_nunca_devuelve_la_contrasena_en_texto_plano():    # R10
 
 
 def test_hashear_dos_veces_la_misma_contrasena_da_hashes_distintos():  # sal aleatoria
-    assert hashear("clave-segura-1") != hashear("clave-segura-1")
+    primer_hash = hashear("clave-segura-1")
+    segundo_hash = hashear("clave-segura-1")
+    assert primer_hash != segundo_hash
 
 
 def test_hashear_rechaza_contrasena_demasiado_larga():
