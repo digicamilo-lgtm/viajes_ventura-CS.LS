@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { startTransition, useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 const VACIO = { nombre: '', fecha_salida: '', fecha_regreso: '', cupo_maximo: 1, margen: 0.2, destino_ids: [] }
 
@@ -11,16 +11,18 @@ export default function AdminPaquetes() {
   const [nuevo, setNuevo] = useState(VACIO)
   const [error, setError] = useState('')
 
-  async function cargar() {
+  const cargar = useCallback(async () => {
     const [listaPaquetes, listaDestinos] = await Promise.all([
       api.get('/paquetes', sesion.token),
       api.get('/destinos?solo_disponibles=true', sesion.token),
     ])
-    setPaquetes(listaPaquetes)
-    setDestinos(listaDestinos)
-  }
+    startTransition(() => {
+      setPaquetes(listaPaquetes)
+      setDestinos(listaDestinos)
+    })
+  }, [sesion.token])
 
-  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [])
+  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [cargar])
 
   function cambiar(campo) {
     return (evento) => setNuevo((d) => ({ ...d, [campo]: evento.target.value }))
@@ -103,17 +105,17 @@ export default function AdminPaquetes() {
 
       <h3>Nuevo paquete</h3>
       <form onSubmit={crear} className="formulario">
-        <label>Nombre <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
-        <label>Fecha de salida
+        <label><span>Nombre</span> <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
+        <label><span>Fecha de salida</span>
           <input type="date" value={nuevo.fecha_salida} onChange={cambiar('fecha_salida')} required />
         </label>
-        <label>Fecha de regreso
+        <label><span>Fecha de regreso</span>
           <input type="date" value={nuevo.fecha_regreso} onChange={cambiar('fecha_regreso')} required />
         </label>
-        <label>Cupo máximo
+        <label><span>Cupo máximo</span>
           <input type="number" min="1" value={nuevo.cupo_maximo} onChange={cambiar('cupo_maximo')} required />
         </label>
-        <label>Margen (ej. 0.20 = 20 %)
+        <label><span>Margen (ej. 0.20 = 20 %)</span>
           <input type="number" min="0" step="0.01" value={nuevo.margen} onChange={cambiar('margen')} required />
         </label>
         <fieldset>

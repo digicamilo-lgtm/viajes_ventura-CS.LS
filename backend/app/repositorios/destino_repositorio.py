@@ -14,16 +14,16 @@ class DestinoRepositorio(Repositorio[Destino]):
                 cursor = self._conexion.execute(
                     "INSERT INTO destinos (nombre, zona, descripcion, duracion_dias, costo_base, disponible)"
                     " VALUES (?, ?, ?, ?, ?, ?)", valores)
-                id = cursor.lastrowid
+                destino_id = cursor.lastrowid
             else:
                 self._conexion.execute(
                     "UPDATE destinos SET nombre = ?, zona = ?, descripcion = ?, duracion_dias = ?,"
                     " costo_base = ?, disponible = ? WHERE id = ?", (*valores, destino.id))
-                id = destino.id
-        return self.buscar_por_id(id)
+                destino_id = destino.id
+        return self.buscar_por_id(destino_id)
 
-    def buscar_por_id(self, id: int) -> Destino | None:
-        fila = self._conexion.execute("SELECT * FROM destinos WHERE id = ?", (id,)).fetchone()
+    def buscar_por_id(self, destino_id: int) -> Destino | None:
+        fila = self._conexion.execute("SELECT * FROM destinos WHERE id = ?", (destino_id,)).fetchone()
         return self._a_destino(fila) if fila else None
 
     def buscar_varios(self, ids: list[int]) -> list[Destino]:
@@ -44,15 +44,15 @@ class DestinoRepositorio(Repositorio[Destino]):
             (nombre.strip(), excluir_id)).fetchone()
         return fila is not None
 
-    def esta_en_algun_paquete(self, id: int) -> bool:
+    def esta_en_algun_paquete(self, destino_id: int) -> bool:
         """R8: decide entre eliminar el destino o marcarlo no disponible."""
         fila = self._conexion.execute(
-            "SELECT 1 FROM paquete_destinos WHERE destino_id = ? LIMIT 1", (id,)).fetchone()
+            "SELECT 1 FROM paquete_destinos WHERE destino_id = ? LIMIT 1", (destino_id,)).fetchone()
         return fila is not None
 
-    def eliminar(self, id: int) -> None:
+    def eliminar(self, destino_id: int) -> None:
         with self._conexion:
-            self._conexion.execute("DELETE FROM destinos WHERE id = ?", (id,))
+            self._conexion.execute("DELETE FROM destinos WHERE id = ?", (destino_id,))
 
     @staticmethod
     def _a_destino(fila: sqlite3.Row) -> Destino:

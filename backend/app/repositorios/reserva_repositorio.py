@@ -15,11 +15,11 @@ class ReservaRepositorio(Repositorio[Reserva]):
             cursor = self._conexion.execute(
                 "INSERT INTO reservas (cliente_id, paquete_id, fecha_emision, cantidad_personas, total)"
                 " VALUES (?, ?, ?, ?, ?)", valores)
-            id = cursor.lastrowid
-        return self.buscar_por_id(id)
+            reserva_id = cursor.lastrowid
+        return self.buscar_por_id(reserva_id)
 
-    def buscar_por_id(self, id: int) -> Reserva | None:
-        fila = self._conexion.execute("SELECT * FROM reservas WHERE id = ?", (id,)).fetchone()
+    def buscar_por_id(self, reserva_id: int) -> Reserva | None:
+        fila = self._conexion.execute("SELECT * FROM reservas WHERE id = ?", (reserva_id,)).fetchone()
         return self._a_reserva(fila) if fila else None
 
     def listar(self) -> list[Reserva]:

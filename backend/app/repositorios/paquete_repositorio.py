@@ -21,20 +21,20 @@ class PaqueteRepositorio(Repositorio[Paquete]):
                 cursor = self._conexion.execute(
                     "INSERT INTO paquetes (nombre, fecha_salida, fecha_regreso, cupo_maximo, margen,"
                     " precio_por_persona, estado) VALUES (?, ?, ?, ?, ?, ?, ?)", valores)
-                id = cursor.lastrowid
+                paquete_id = cursor.lastrowid
             else:
-                id = paquete.id
+                paquete_id = paquete.id
                 self._conexion.execute(
                     "UPDATE paquetes SET nombre = ?, fecha_salida = ?, fecha_regreso = ?, cupo_maximo = ?,"
-                    " margen = ?, precio_por_persona = ?, estado = ? WHERE id = ?", (*valores, id))
-                self._conexion.execute("DELETE FROM paquete_destinos WHERE paquete_id = ?", (id,))
+                    " margen = ?, precio_por_persona = ?, estado = ? WHERE id = ?", (*valores, paquete_id))
+                self._conexion.execute("DELETE FROM paquete_destinos WHERE paquete_id = ?", (paquete_id,))
             self._conexion.executemany(
                 "INSERT INTO paquete_destinos (paquete_id, destino_id) VALUES (?, ?)",
-                [(id, d.id) for d in paquete.destinos])
-        return self.buscar_por_id(id)
+                [(paquete_id, d.id) for d in paquete.destinos])
+        return self.buscar_por_id(paquete_id)
 
-    def buscar_por_id(self, id: int) -> Paquete | None:
-        fila = self._conexion.execute("SELECT * FROM paquetes WHERE id = ?", (id,)).fetchone()
+    def buscar_por_id(self, paquete_id: int) -> Paquete | None:
+        fila = self._conexion.execute("SELECT * FROM paquetes WHERE id = ?", (paquete_id,)).fetchone()
         return self._a_paquete(fila) if fila else None
 
     def listar(self) -> list[Paquete]:
@@ -48,15 +48,15 @@ class PaqueteRepositorio(Repositorio[Paquete]):
             (EstadoPaquete.PUBLICADO.value, hoy.isoformat()))
         return [self._a_paquete(f) for f in filas.fetchall()]
 
-    def personas_reservadas(self, id: int) -> int:
+    def personas_reservadas(self, paquete_id: int) -> int:
         """Suma de personas de las reservas del paquete; base del cupo disponible (R14)."""
         fila = self._conexion.execute(
-            "SELECT COALESCE(SUM(cantidad_personas), 0) FROM reservas WHERE paquete_id = ?", (id,)).fetchone()
+            "SELECT COALESCE(SUM(cantidad_personas), 0) FROM reservas WHERE paquete_id = ?", (paquete_id,)).fetchone()
         return fila[0]
 
-    def eliminar(self, id: int) -> None:
+    def eliminar(self, paquete_id: int) -> None:
         with self._conexion:
-            self._conexion.execute("DELETE FROM paquetes WHERE id = ?", (id,))
+            self._conexion.execute("DELETE FROM paquetes WHERE id = ?", (paquete_id,))
 
     def _a_paquete(self, fila: sqlite3.Row) -> Paquete:
         ids = [f["destino_id"] for f in self._conexion.execute(

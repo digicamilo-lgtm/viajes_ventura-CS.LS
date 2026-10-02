@@ -13,6 +13,8 @@ TW, TH = 146, 72          # tamaño de una tarea
 POOL_BAND, LANE_BAND = 34, 34
 PAD = 14
 FONT = "Arial, Helvetica, sans-serif"
+NOMBRE_PROYECTO = "Viajes Aventura"
+NOMBRE_BD = "Base de datos"
 
 
 class Proceso:
@@ -33,10 +35,11 @@ class Proceso:
 
     def nodo(self, id, tipo, lane, fila, col, texto="", pos="arriba"):
         cx, cy = self.centro(lane, fila, col)
-        self.nodos[id] = dict(tipo=tipo, cx=cx, cy=cy, texto=texto, pos=pos)
+        self.nodos[id] = {"tipo": tipo, "cx": cx, "cy": cy, "texto": texto, "pos": pos}
 
     def flujo(self, a, b, ps="r", pt="l", etiqueta="", via=None, asociacion=False):
-        self.flujos.append(dict(a=a, b=b, ps=ps, pt=pt, et=etiqueta, via=via, asoc=asociacion))
+        self.flujos.append({"a": a, "b": b, "ps": ps, "pt": pt, "et": etiqueta,
+                            "via": via, "asoc": asociacion})
 
     # --- geometría -------------------------------------------------------
     def medio(self, n):
@@ -54,21 +57,25 @@ class Proceso:
         if f["via"]:
             return [(sx, sy), *f["via"], (tx, ty)]
         hs, ht = f["ps"] in "rl", f["pt"] in "rl"
-        if abs(sy - ty) < 1 and hs and ht or abs(sx - tx) < 1 and not hs and not ht:
+        if (abs(sy - ty) < 1 and hs and ht) or (abs(sx - tx) < 1 and not hs and not ht):
             return [(sx, sy), (tx, ty)]
-        if hs and ht:
-            if f["ps"] == "r" and f["pt"] == "l" and tx > sx:
+        if hs == ht:
+            return self._ruta_misma_orientacion(sx, sy, tx, ty, f["ps"], hs)
+        return [(sx, sy), (tx, sy), (tx, ty)] if hs else [(sx, sy), (sx, ty), (tx, ty)]
+
+    @staticmethod
+    def _ruta_misma_orientacion(sx, sy, tx, ty, salida, horizontal):
+        if horizontal:
+            if salida == "r" and tx > sx:
                 mx = (sx + tx) / 2
             else:
-                mx = max(sx, tx) + 28 if f["ps"] == "r" else min(sx, tx) - 28
+                mx = max(sx, tx) + 28 if salida == "r" else min(sx, tx) - 28
             return [(sx, sy), (mx, sy), (mx, ty), (tx, ty)]
-        if not hs and not ht:
-            if f["ps"] == "b" and f["pt"] == "t" and ty > sy or f["ps"] == "t" and f["pt"] == "b" and ty < sy:
-                my = (sy + ty) / 2
-            else:
-                my = max(sy, ty) + 24 if f["ps"] == "b" else min(sy, ty) - 24
-            return [(sx, sy), (sx, my), (tx, my), (tx, ty)]
-        return [(sx, sy), (tx, sy), (tx, ty)] if hs else [(sx, sy), (sx, ty), (tx, ty)]
+        if (salida == "b" and ty > sy) or (salida == "t" and ty < sy):
+            my = (sy + ty) / 2
+        else:
+            my = max(sy, ty) + 24 if salida == "b" else min(sy, ty) - 24
+        return [(sx, sy), (sx, my), (tx, my), (tx, ty)]
 
     # --- dibujo ----------------------------------------------------------
     def texto(self, x, y, lineas, size=12.5, peso="normal", color="#1F2933", anchor="middle"):
@@ -79,62 +86,88 @@ class Proceso:
             f'fill="{color}" text-anchor="{anchor}" dominant-baseline="middle" font-family="{FONT}">'
             f"{escape(l)}</text>" for i, l in enumerate(lineas))
 
-    def svg(self):
-        o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.ancho}" height="{self.alto}" '
-             f'viewBox="0 0 {self.ancho} {self.alto}">',
-             '<defs><marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" '
-             'markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>'
-             '<marker id="abierta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" '
-             'orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#666"/></marker></defs>',
-             f'<rect width="100%" height="100%" fill="white"/>']
+    def _encabezado_svg(self):
+        return [f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.ancho}" height="{self.alto}" '
+                f'viewBox="0 0 {self.ancho} {self.alto}">',
+                '<defs><marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" '
+                'markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>'
+                '<marker id="abierta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" '
+                'orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#666"/></marker></defs>',
+                '<rect width="100%" height="100%" fill="white"/>']
+
+    def _dibujar_pool(self, o):
         x1, y1, x2, y2 = PAD, PAD, self.ancho - PAD, self.alto - PAD
-        o.append(f'<rect x="{x1}" y="{y1}" width="{x2 - x1}" height="{y2 - y1}" fill="white" stroke="#333" stroke-width="1.6"/>')
-        o.append(f'<line x1="{x1 + POOL_BAND}" y1="{y1}" x2="{x1 + POOL_BAND}" y2="{y2}" stroke="#333" stroke-width="1.6"/>')
         cy = (y1 + y2) / 2
-        o.append(f'<g transform="translate({x1 + POOL_BAND / 2},{cy}) rotate(-90)">{self.texto(0, 0, self.pool, 14, "bold")}</g>')
+        o.extend([
+            f'<rect x="{x1}" y="{y1}" width="{x2 - x1}" height="{y2 - y1}" fill="white" stroke="#333" stroke-width="1.6"/>',
+            f'<line x1="{x1 + POOL_BAND}" y1="{y1}" x2="{x1 + POOL_BAND}" y2="{y2}" stroke="#333" stroke-width="1.6"/>',
+            f'<g transform="translate({x1 + POOL_BAND / 2},{cy}) rotate(-90)">{self.texto(0, 0, self.pool, 14, "bold")}</g>',
+        ])
         colores = ["#F4F8FC", "#FBF7F0", "#F3F8F3"]
         for i, (nombre, filas) in enumerate(self.lanes):
             ly, _ = self.lane_y[nombre]
             h = filas * RH
             lx = x1 + POOL_BAND
-            o.append(f'<rect x="{lx}" y="{ly}" width="{x2 - lx}" height="{h}" fill="{colores[i % 3]}" stroke="#333" stroke-width="1"/>')
-            o.append(f'<line x1="{lx + LANE_BAND}" y1="{ly}" x2="{lx + LANE_BAND}" y2="{ly + h}" stroke="#333"/>')
-            o.append(f'<g transform="translate({lx + LANE_BAND / 2},{ly + h / 2}) rotate(-90)">{self.texto(0, 0, nombre, 13.5, "bold")}</g>')
-        for f in self.flujos:
-            pts = self.ruta(f)
-            d = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
-            if f["asoc"]:
-                o.append(f'<polyline points="{d}" fill="none" stroke="#666" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#abierta)"/>')
-            else:
-                o.append(f'<polyline points="{d}" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#flecha)"/>')
-            if f["et"]:
-                (ax, ay), (bx, by) = pts[0], pts[1]
-                if abs(ay - by) < 1:   # primer tramo horizontal
-                    lx, ly, anc = ax + (8 if bx > ax else -8), ay - 9, "start" if bx > ax else "end"
-                else:
-                    lx, ly, anc = ax + 6, ay + (12 if by > ay else -12), "start"
-                o.append(self.texto(lx, ly, f["et"], 11.5, "bold", "#0B5394", anc))
-        for n in self.nodos.values():
-            x, y, t = n["cx"], n["cy"], n["texto"]
-            if n["tipo"] == "task":
-                o.append(f'<rect x="{x - TW / 2}" y="{y - TH / 2}" width="{TW}" height="{TH}" rx="10" fill="white" stroke="#1F4E79" stroke-width="1.6"/>')
-                o.append(self.texto(x, y, t, 12))
-            elif n["tipo"] in ("start", "end"):
-                ancho, color = (1.8, "#2E7D32") if n["tipo"] == "start" else (4, "#B71C1C")
-                o.append(f'<circle cx="{x}" cy="{y}" r="17" fill="white" stroke="{color}" stroke-width="{ancho}"/>')
-                if t:
-                    o.append(self.texto(x, y + 32, t, 11, "normal", "#333"))
-            elif n["tipo"] == "gw":
-                o.append(f'<polygon points="{x},{y - 26} {x + 26},{y} {x},{y + 26} {x - 26},{y}" fill="#FFF8E1" stroke="#9A7B00" stroke-width="1.6"/>')
-                o.append(f'<path d="M{x - 8},{y - 8} L{x + 8},{y + 8} M{x + 8},{y - 8} L{x - 8},{y + 8}" stroke="#333" stroke-width="2.6"/>')
-                if t:
-                    lx, ly, anc = {"arriba": (x, y - 42, "middle"), "izq": (x - 32, y, "end"),
-                                   "noroeste": (x - 22, y - 36, "end")}[n["pos"]]
-                    o.append(self.texto(lx, ly, t, 11.5, "bold", "#5C4A00", anc))
-            elif n["tipo"] == "store":
-                o.append(f'<path d="M{x - 24},{y - 14} v30 a24,7 0 0 0 48,0 v-30" fill="white" stroke="#333" stroke-width="1.4"/>')
-                o.append(f'<ellipse cx="{x}" cy="{y - 14}" rx="24" ry="7" fill="white" stroke="#333" stroke-width="1.4"/>')
-                o.append(self.texto(x, y + 36, t, 11, "normal", "#333"))
+            o.extend([
+                f'<rect x="{lx}" y="{ly}" width="{x2 - lx}" height="{h}" fill="{colores[i % 3]}" stroke="#333" stroke-width="1"/>',
+                f'<line x1="{lx + LANE_BAND}" y1="{ly}" x2="{lx + LANE_BAND}" y2="{ly + h}" stroke="#333"/>',
+                f'<g transform="translate({lx + LANE_BAND / 2},{ly + h / 2}) rotate(-90)">{self.texto(0, 0, nombre, 13.5, "bold")}</g>',
+            ])
+
+    def _dibujar_flujos(self, o):
+        for flujo in self.flujos:
+            puntos = self.ruta(flujo)
+            coordenadas = " ".join(f"{x:.1f},{y:.1f}" for x, y in puntos)
+            marcador = "url(#abierta)" if flujo["asoc"] else "url(#flecha)"
+            color = "#666" if flujo["asoc"] else "#333"
+            ancho = "1.2" if flujo["asoc"] else "1.4"
+            estilo = ' stroke-dasharray="3,3"' if flujo["asoc"] else ""
+            o.append(f'<polyline points="{coordenadas}" fill="none" stroke="{color}" stroke-width="{ancho}"{estilo} marker-end="{marcador}"/>')
+            if flujo["et"]:
+                self._dibujar_etiqueta_flujo(o, puntos, flujo["et"])
+
+    def _dibujar_etiqueta_flujo(self, o, puntos, etiqueta):
+        (ax, ay), (bx, by) = puntos[0], puntos[1]
+        if abs(ay - by) < 1:
+            lx, ly, ancla = ax + (8 if bx > ax else -8), ay - 9, "start" if bx > ax else "end"
+        else:
+            lx, ly, ancla = ax + 6, ay + (12 if by > ay else -12), "start"
+        o.append(self.texto(lx, ly, etiqueta, 11.5, "bold", "#0B5394", ancla))
+
+    def _dibujar_nodo(self, o, nodo):
+        x, y, texto = nodo["cx"], nodo["cy"], nodo["texto"]
+        if nodo["tipo"] == "task":
+            o.extend([
+                f'<rect x="{x - TW / 2}" y="{y - TH / 2}" width="{TW}" height="{TH}" rx="10" fill="white" stroke="#1F4E79" stroke-width="1.6"/>',
+                self.texto(x, y, texto, 12),
+            ])
+        elif nodo["tipo"] in ("start", "end"):
+            ancho, color = (1.8, "#2E7D32") if nodo["tipo"] == "start" else (4, "#B71C1C")
+            o.append(f'<circle cx="{x}" cy="{y}" r="17" fill="white" stroke="{color}" stroke-width="{ancho}"/>')
+            if texto:
+                o.append(self.texto(x, y + 32, texto, 11, "normal", "#333"))
+        elif nodo["tipo"] == "gw":
+            o.extend([
+                f'<polygon points="{x},{y - 26} {x + 26},{y} {x},{y + 26} {x - 26},{y}" fill="#FFF8E1" stroke="#9A7B00" stroke-width="1.6"/>',
+                f'<path d="M{x - 8},{y - 8} L{x + 8},{y + 8} M{x + 8},{y - 8} L{x - 8},{y + 8}" stroke="#333" stroke-width="2.6"/>',
+            ])
+            if texto:
+                lx, ly, ancla = {"arriba": (x, y - 42, "middle"), "izq": (x - 32, y, "end"),
+                                 "noroeste": (x - 22, y - 36, "end")}[nodo["pos"]]
+                o.append(self.texto(lx, ly, texto, 11.5, "bold", "#5C4A00", ancla))
+        elif nodo["tipo"] == "store":
+            o.extend([
+                f'<path d="M{x - 24},{y - 14} v30 a24,7 0 0 0 48,0 v-30" fill="white" stroke="#333" stroke-width="1.4"/>',
+                f'<ellipse cx="{x}" cy="{y - 14}" rx="24" ry="7" fill="white" stroke="#333" stroke-width="1.4"/>',
+                self.texto(x, y + 36, texto, 11, "normal", "#333"),
+            ])
+
+    def svg(self):
+        o = self._encabezado_svg()
+        self._dibujar_pool(o)
+        self._dibujar_flujos(o)
+        for nodo in self.nodos.values():
+            self._dibujar_nodo(o, nodo)
         o.append("</svg>")
         return "".join(o)
 
@@ -144,7 +177,7 @@ class Proceso:
 # ======================================================================
 def bpmn_destinos():
     A, S = "Administrador", "Sistema"
-    p = Proceso("Viajes Aventura", [(A, 3), (S, 4)], 9)
+    p = Proceso(NOMBRE_PROYECTO, [(A, 3), (S, 4)], 9)
     p.nodo("ini", "start", A, 1, 0, "Necesita actualizar\nel catálogo")
     p.nodo("login", "task", A, 1, 1, "Iniciar sesión\ncomo administrador")
     p.nodo("listar", "task", S, 0, 2, "Listar catálogo:\ndisponibles y\nno disponibles [FR-04]")
@@ -158,7 +191,7 @@ def bpmn_destinos():
     p.nodo("guardar", "task", S, 0, 7, "Guardar destino\n[FR-01 / FR-02]")
     p.nodo("fin1", "end", S, 0, 8, "Destino\nguardado")
     p.nodo("error", "task", S, 1, 6, "Informar campo inválido\n(sin exponer datos)")
-    p.nodo("bd", "store", S, 1, 7, "Base de datos")
+    p.nodo("bd", "store", S, 1, 7, NOMBRE_BD)
     p.nodo("parte", "gw", S, 2, 4, "¿Pertenece a algún\npaquete? (R8)", "izq")
     p.nodo("marcar", "task", S, 2, 5, "Marcar destino\nno disponible [FR-03]")
     p.nodo("fin2", "end", S, 2, 6, "Destino\nno disponible")
@@ -192,7 +225,7 @@ def bpmn_destinos():
 # ======================================================================
 def bpmn_paquetes():
     A, S = "Administrador", "Sistema"
-    p = Proceso("Viajes Aventura", [(A, 2), (S, 2)], 9)
+    p = Proceso(NOMBRE_PROYECTO, [(A, 2), (S, 2)], 9)
     p.nodo("ini", "start", A, 0, 0, "Nueva temporada\no paquete")
     p.nodo("datos", "task", A, 0, 1, "Ingresar nombre,\nfechas, cupo y\nmargen [FR-05]")
     p.nodo("disp", "task", S, 0, 2, "Ofrecer solo destinos\ndisponibles (R8)")
@@ -206,7 +239,7 @@ def bpmn_paquetes():
     p.nodo("borr", "end", A, 1, 7, "Queda en\nborrador")
     p.nodo("fijar", "task", S, 0, 8, "Publicar: fijar precio\ny estado PUBLICADO\n[FR-07]")
     p.nodo("fin", "end", S, 1, 8, "Paquete\npublicado")
-    p.nodo("bd", "store", S, 1, 7, "Base de datos")
+    p.nodo("bd", "store", S, 1, 7, NOMBRE_BD)
     p.flujo("ini", "datos")
     p.flujo("datos", "disp", "r", "t")
     p.flujo("disp", "selec", "r", "b")
@@ -229,7 +262,7 @@ def bpmn_paquetes():
 # ======================================================================
 def bpmn_reservas():
     C, S = "Cliente", "Sistema"
-    p = Proceso("Viajes Aventura", [(C, 3), (S, 3)], 11)
+    p = Proceso(NOMBRE_PROYECTO, [(C, 3), (S, 3)], 11)
     p.nodo("ini", "start", C, 0, 0, "Quiere viajar")
     p.nodo("ver", "task", S, 0, 1, "Mostrar paquetes\npublicados con precio\ny cupo disponible\n[FR-08]")
     p.nodo("elige", "task", C, 0, 2, "Seleccionar paquete")
@@ -247,7 +280,7 @@ def bpmn_reservas():
     p.nodo("rechC", "task", S, 1, 8, "Rechazar reserva:\ncupo insuficiente\n[FR-13]")
     p.nodo("finR", "end", S, 2, 8, "Reserva\nrechazada")
     p.nodo("reservar", "task", S, 0, 9, "Registrar reserva:\ntotal = precio × personas\ny fecha de emisión\n[FR-11, FR-12]")
-    p.nodo("bd", "store", S, 1, 10, "Base de datos")
+    p.nodo("bd", "store", S, 1, 10, NOMBRE_BD)
     p.nodo("hist", "task", C, 0, 9, "Consultar historial\nde mis reservas\n[FR-15]")
     p.nodo("fin", "end", C, 0, 10, "Reserva\nregistrada")
     p.flujo("ini", "ver", "r", "t")

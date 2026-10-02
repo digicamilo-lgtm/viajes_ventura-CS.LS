@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 const VACIO = { nombre: '', zona: '', descripcion: '', duracion_dias: 1, costo_base: 0 }
 
@@ -10,11 +10,11 @@ export default function AdminDestinos() {
   const [nuevo, setNuevo] = useState(VACIO)
   const [error, setError] = useState('')
 
-  function cargar() {
+  const cargar = useCallback(() => {
     return api.get('/destinos', sesion.token).then(setDestinos)
-  }
+  }, [sesion.token])
 
-  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [])
+  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [cargar])
 
   function cambiar(campo) {
     return (evento) => setNuevo((d) => ({ ...d, [campo]: evento.target.value }))
@@ -72,13 +72,13 @@ export default function AdminDestinos() {
 
       <h3>Nuevo destino</h3>
       <form onSubmit={crear} className="formulario">
-        <label>Nombre <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
-        <label>Zona <input value={nuevo.zona} onChange={cambiar('zona')} required /></label>
-        <label>Descripción <input value={nuevo.descripcion} onChange={cambiar('descripcion')} /></label>
-        <label>Duración (días)
+        <label><span>Nombre</span> <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
+        <label><span>Zona</span> <input value={nuevo.zona} onChange={cambiar('zona')} required /></label>
+        <label><span>Descripción</span> <input value={nuevo.descripcion} onChange={cambiar('descripcion')} /></label>
+        <label><span>Duración (días)</span>
           <input type="number" min="1" value={nuevo.duracion_dias} onChange={cambiar('duracion_dias')} required />
         </label>
-        <label>Costo base
+        <label><span>Costo base</span>
           <input type="number" min="1" value={nuevo.costo_base} onChange={cambiar('costo_base')} required />
         </label>
         <button type="submit">Registrar destino</button>

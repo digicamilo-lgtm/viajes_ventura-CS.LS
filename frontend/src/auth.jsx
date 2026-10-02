@@ -1,12 +1,11 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { api } from './api'
+import { AuthContext } from './auth-context'
 
 // Una sola sesión a la vez, de cliente o de administrador (R11, sección 7.1).
 // El backend ya incluye el rol en el token (app/seguridad/tokens.py); aquí solo
 // se recuerda para mostrar la pantalla correcta, nunca para decidir permisos.
 const CLAVE = 'viajes-aventura-sesion'
-const AuthContext = createContext(null)
-
 function cargarSesion() {
   try {
     const guardada = localStorage.getItem(CLAVE)
@@ -46,16 +45,13 @@ export function AuthProvider({ children }) {
   }, [establecer])
 
   const cerrarSesion = useCallback(() => establecer(null), [establecer])
+  const valor = useMemo(() => ({ sesion, iniciarSesionCliente, iniciarSesionAdmin, cerrarSesion }),
+    [sesion, iniciarSesionCliente, iniciarSesionAdmin, cerrarSesion])
 
   return (
-    <AuthContext.Provider value={{ sesion, iniciarSesionCliente, iniciarSesionAdmin, cerrarSesion }}>
+    <AuthContext.Provider value={valor}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuth() {
-  const contexto = useContext(AuthContext)
-  if (!contexto) throw new Error('useAuth debe usarse dentro de <AuthProvider>.')
-  return contexto
-}

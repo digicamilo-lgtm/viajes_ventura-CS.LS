@@ -1,5 +1,5 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { useAuth } from './auth'
+import { useAuth } from './use-auth'
 import AdminDestinos from './pages/AdminDestinos'
 import AdminLogin from './pages/AdminLogin'
 import AdminPaquetes from './pages/AdminPaquetes'

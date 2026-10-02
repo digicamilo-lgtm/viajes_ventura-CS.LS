@@ -58,13 +58,7 @@ def actor(x, y, nombre):
             + texto(x, y + 52, nombre, 13.5, "bold"))
 
 
-def svg():
-    o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
-         '<defs><marker id="abierta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" '
-         'orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#333" stroke-width="1.4"/></marker></defs>',
-         '<rect width="100%" height="100%" fill="white"/>',
-         f'<rect x="190" y="20" width="790" height="{H - 40}" rx="6" fill="#F7F9FC" stroke="#333" stroke-width="1.6"/>',
-         texto(585, 42, "Sistema de gestión Viajes Aventura", 14, "bold")]
+def dibujar_asociaciones(o):
     for a, c in ASOCIACIONES:
         ax, ay = ACTORES[a]
         ax += 22 if a == "Cliente" else -22
@@ -74,6 +68,9 @@ def svg():
         else:
             bx, by = (cx - RX, cy) if a == "Cliente" else (cx + RX, cy)
         o.append(f'<line x1="{ax}" y1="{ay - 10}" x2="{bx:.1f}" y2="{by:.1f}" stroke="#333" stroke-width="1.3"/>')
+
+
+def dibujar_includes(o):
     for base, inc in INCLUDES:
         p1 = borde(base, CASOS[inc][:2])
         p2 = borde(inc, CASOS[base][:2])
@@ -85,11 +82,30 @@ def svg():
         else:
             o.append(f'<rect x="{mx - 30}" y="{my - 9}" width="60" height="16" fill="#F7F9FC"/>')
             o.append(texto(mx, my - 1, "«include»", 11, "normal", "#0B5394"))
+
+
+def dibujar_casos(o):
     for x, y, t in CASOS.values():
         o.append(f'<ellipse cx="{x}" cy="{y}" rx="{RX}" ry="{RY}" fill="white" stroke="#1F4E79" stroke-width="1.6"/>')
         o.append(texto(x, y, t, 12))
+
+
+def dibujar_actores(o):
     for nombre, (x, y) in ACTORES.items():
         o.append(actor(x, y, nombre))
+
+
+def svg():
+    o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
+         '<defs><marker id="abierta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" '
+         'orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#333" stroke-width="1.4"/></marker></defs>',
+         '<rect width="100%" height="100%" fill="white"/>',
+         f'<rect x="190" y="20" width="790" height="{H - 40}" rx="6" fill="#F7F9FC" stroke="#333" stroke-width="1.6"/>',
+         texto(585, 42, "Sistema de gestión Viajes Aventura", 14, "bold")]
+    dibujar_asociaciones(o)
+    dibujar_includes(o)
+    dibujar_casos(o)
+    dibujar_actores(o)
     o.append("</svg>")
     return "".join(o)
 

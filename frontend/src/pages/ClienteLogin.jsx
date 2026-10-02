@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 export default function ClienteLogin() {
   const [correo, setCorreo] = useState('')
@@ -27,10 +27,10 @@ export default function ClienteLogin() {
   return (
     <form onSubmit={enviar} className="formulario">
       <h2>Iniciar sesión</h2>
-      <label>Correo
+      <label><span>Correo</span>
         <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
       </label>
-      <label>Contraseña
+      <label><span>Contraseña</span>
         <input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
       </label>
       {error && <p className="error">{error}</p>}

@@ -4,8 +4,10 @@ from conftest import cliente_autenticado, cliente_registrado, encabezado, token
 
 def test_registrar_no_expone_la_contrasena(cliente):                # R9, R10
     creado = cliente_registrado(cliente)
-    assert "contrasena" not in creado and "hash_contrasena" not in creado
-    assert creado["rut"] == "11111111-1" and creado["telefono"] == "+56 9 1111 1111"
+    assert "contrasena" not in creado
+    assert "hash_contrasena" not in creado
+    assert creado["rut"] == "11111111-1"
+    assert creado["telefono"] == "+56 9 1111 1111"
 
 
 def test_correo_unico_sin_distinguir_mayusculas(cliente):           # R9
@@ -27,7 +29,8 @@ def test_correo_invalido_es_rechazado(cliente):
 def test_iniciar_sesion_con_credenciales_correctas(cliente):        # FR-10
     cliente_registrado(cliente, correo="carolina@example.com", contrasena="clave-segura-1")
     t = token(cliente, "carolina@example.com", "clave-segura-1")
-    assert isinstance(t, str) and len(t) > 10
+    assert isinstance(t, str)
+    assert len(t) > 10
 
 
 def test_iniciar_sesion_con_contrasena_incorrecta_falla_generico(cliente):

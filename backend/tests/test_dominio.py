@@ -36,7 +36,8 @@ def test_destino_actualizar_invalido_no_deja_cambios_a_medias():
     surire, _ = destinos_caso()
     with pytest.raises(ReglaNegocioError):
         surire.actualizar({"zona": "Otra zona", "costo_base": 0})
-    assert surire.zona == "Región de Arica y Parinacota" and surire.costo_base == 310_000
+    assert surire.zona == "Región de Arica y Parinacota"
+    assert surire.costo_base == 310_000
 
 
 def test_destino_no_permite_cambiar_disponibilidad_por_actualizar():
@@ -182,31 +183,35 @@ def test_reserva_no_cambia_si_el_precio_del_paquete_cambia_despues():  # R13, R7
 
 def test_reserva_rechaza_paquete_no_publicado():                     # FR-12
     borrador = norte_grande()
+    hoy = date(2026, 11, 1)
     with pytest.raises(ReglaNegocioError, match="publicado"):
         Reserva.crear(cliente_id=1, paquete=borrador, cantidad_personas=1,
-                      personas_reservadas=0, hoy=date(2026, 11, 1))
+                      personas_reservadas=0, hoy=hoy)
 
 
 def test_reserva_rechaza_paquete_vencido():                          # R15
     paquete = publicado()
+    hoy = date(2026, 12, 11)
     with pytest.raises(ReglaNegocioError, match="ya pasó"):
         Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=1,
-                      personas_reservadas=0, hoy=date(2026, 12, 11))
+                      personas_reservadas=0, hoy=hoy)
 
 
 def test_reserva_rechaza_si_supera_el_cupo_disponible():             # R14
     paquete = publicado(cupo_maximo=5)
+    hoy = date(2026, 11, 1)
     with pytest.raises(ReglaNegocioError, match="cupo"):
         Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=3,
-                      personas_reservadas=3, hoy=date(2026, 11, 1))
+                      personas_reservadas=3, hoy=hoy)
 
 
 @pytest.mark.parametrize("personas", [0, -1])
 def test_reserva_rechaza_menos_de_una_persona(personas):             # R16
     paquete = publicado()
+    hoy = date(2026, 11, 1)
     with pytest.raises(ReglaNegocioError, match="al menos uno"):
         Reserva.crear(cliente_id=1, paquete=paquete, cantidad_personas=personas,
-                      personas_reservadas=0, hoy=date(2026, 11, 1))
+                      personas_reservadas=0, hoy=hoy)
 
 
 # --- Usuario, Cliente y Administrador (herencia y polimorfismo, Figura 5) -------

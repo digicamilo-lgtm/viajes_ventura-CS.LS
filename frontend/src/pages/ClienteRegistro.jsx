@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 const VACIO = { nombre: '', rut: '', correo: '', telefono: '', contrasena: '' }
 
@@ -34,19 +34,19 @@ export default function ClienteRegistro() {
   return (
     <form onSubmit={enviar} className="formulario">
       <h2>Crear cuenta</h2>
-      <label>Nombre
+      <label><span>Nombre</span>
         <input value={datos.nombre} onChange={cambiar('nombre')} required />
       </label>
-      <label>RUT
+      <label><span>RUT</span>
         <input value={datos.rut} onChange={cambiar('rut')} placeholder="12345678-9" required />
       </label>
-      <label>Correo
+      <label><span>Correo</span>
         <input type="email" value={datos.correo} onChange={cambiar('correo')} required />
       </label>
-      <label>Teléfono
+      <label><span>Teléfono</span>
         <input value={datos.telefono} onChange={cambiar('telefono')} required />
       </label>
-      <label>Contraseña
+      <label><span>Contraseña</span>
         <input type="password" value={datos.contrasena} onChange={cambiar('contrasena')} minLength={8} required />
       </label>
       {error && <p className="error">{error}</p>}

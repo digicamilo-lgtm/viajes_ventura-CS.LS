@@ -4,6 +4,7 @@ No hay registro público de administradores: se crean desde la consola con
 `python -m app.crear_administrador`, para que nadie pueda darse ese rol a sí mismo.
 """
 import sqlite3
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
@@ -17,7 +18,8 @@ router = APIRouter(prefix="/api/administradores", tags=["Administradores"])
 
 
 @router.post("/sesiones", response_model=TokenSalida)
-def iniciar_sesion(datos: CredencialesEntrada, conexion: sqlite3.Connection = Depends(obtener_conexion)):
+def iniciar_sesion(datos: CredencialesEntrada,
+                   conexion: Annotated[sqlite3.Connection, Depends(obtener_conexion)]):
     """Mismo mensaje genérico y mismo tiempo de respuesta ante cualquier error (sección 7.1)."""
     administrador = AdministradorRepositorio(conexion).buscar_por_correo(datos.correo)
     if administrador is None:
@@ -29,5 +31,5 @@ def iniciar_sesion(datos: CredencialesEntrada, conexion: sqlite3.Connection = De
 
 
 @router.get("/yo", response_model=AdministradorSalida)
-def mi_perfil(administrador: Usuario = Depends(obtener_administrador_actual)):
+def mi_perfil(administrador: Annotated[Usuario, Depends(obtener_administrador_actual)]):
     return AdministradorSalida.desde(administrador)

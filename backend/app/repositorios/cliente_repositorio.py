@@ -13,16 +13,16 @@ class ClienteRepositorio(Repositorio[Cliente]):
                 cursor = self._conexion.execute(
                     "INSERT INTO clientes (nombre, rut, correo, telefono, hash_contrasena)"
                     " VALUES (?, ?, ?, ?, ?)", valores)
-                id = cursor.lastrowid
+                cliente_id = cursor.lastrowid
             else:
                 self._conexion.execute(
                     "UPDATE clientes SET nombre = ?, rut = ?, correo = ?, telefono = ?, hash_contrasena = ?"
                     " WHERE id = ?", (*valores, cliente.id))
-                id = cliente.id
-        return self.buscar_por_id(id)
+                cliente_id = cliente.id
+        return self.buscar_por_id(cliente_id)
 
-    def buscar_por_id(self, id: int) -> Cliente | None:
-        fila = self._conexion.execute("SELECT * FROM clientes WHERE id = ?", (id,)).fetchone()
+    def buscar_por_id(self, cliente_id: int) -> Cliente | None:
+        fila = self._conexion.execute("SELECT * FROM clientes WHERE id = ?", (cliente_id,)).fetchone()
         return self._a_cliente(fila) if fila else None
 
     def buscar_por_correo(self, correo: str) -> Cliente | None:

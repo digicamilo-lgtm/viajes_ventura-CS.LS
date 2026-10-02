@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 export default function AdminLogin() {
   const [correo, setCorreo] = useState('')
@@ -28,10 +28,10 @@ export default function AdminLogin() {
     <form onSubmit={enviar} className="formulario">
       <h2>Acceso de administrador</h2>
       <p className="ayuda">Cuenta creada desde la consola (<code>python -m app.crear_administrador</code>); no hay registro público (S1).</p>
-      <label>Correo
+      <label><span>Correo</span>
         <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
       </label>
-      <label>Contraseña
+      <label><span>Contraseña</span>
         <input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
       </label>
       {error && <p className="error">{error}</p>}

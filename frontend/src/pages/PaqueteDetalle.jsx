@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 export default function PaqueteDetalle() {
   const { id } = useParams()
@@ -12,11 +12,11 @@ export default function PaqueteDetalle() {
   const [error, setError] = useState('')
   const [reservando, setReservando] = useState(false)
 
-  function cargar() {
+  const cargar = useCallback(() => {
     return api.get(`/paquetes/publicados/${id}`).then(setPaquete)
-  }
+  }, [id])
 
-  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [id])
+  useEffect(() => { cargar().catch((e) => setError(e.message)) }, [cargar])
 
   async function reservar(evento) {
     evento.preventDefault()
@@ -47,12 +47,12 @@ export default function PaqueteDetalle() {
       <p className="precio">${paquete.precio_por_persona.toLocaleString('es-CL')} por persona</p>
       <p>Cupo disponible: {paquete.cupo_disponible} de {paquete.cupo_maximo}</p>
 
-      {!sesion || sesion.rol !== 'cliente' ? (
+      {!sesion || sesion?.rol !== 'cliente' ? (
         <p>Para reservar, <Link to="/iniciar-sesion">inicia sesión como cliente</Link>.</p>
       ) : (
         <form onSubmit={reservar} className="formulario">
           <label>
-            Personas
+            <span>Personas</span>
             <input type="number" min="1" max={Math.max(paquete.cupo_disponible, 1)} value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)} required />
           </label>

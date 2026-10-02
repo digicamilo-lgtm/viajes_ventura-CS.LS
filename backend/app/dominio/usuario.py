@@ -1,9 +1,6 @@
-import re
 from abc import ABC, abstractmethod
 
 from app.dominio.errores import ReglaNegocioError
-
-_CORREO_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 class Usuario(ABC):
@@ -58,7 +55,10 @@ class Usuario(ABC):
     @staticmethod
     def _validar_correo(valor: str) -> str:
         valor = (valor or "").strip().lower()
-        if not _CORREO_RE.match(valor):
+        local, separador, dominio = valor.partition("@")
+        correo_valido = (separador and local and dominio and "." in dominio
+                         and not any(c.isspace() for c in valor))
+        if not correo_valido:
             raise ReglaNegocioError("El correo electrónico no tiene un formato válido.")
         return valor
 

@@ -34,7 +34,9 @@ def test_modificar_destino(admin):                                # FR-02
     d = destino(admin, "Isla Damas", 38_000)
     respuesta = admin.put(f"/api/destinos/{d['id']}", json={"costo_base": 40_000})
     assert respuesta.status_code == 200
-    assert respuesta.json()["costo_base"] == 40_000 and respuesta.json()["nombre"] == "Isla Damas"
+    datos = respuesta.json()
+    assert datos["costo_base"] == 40_000
+    assert datos["nombre"] == "Isla Damas"
 
 
 def test_modificar_a_un_nombre_existente_falla(admin):

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { useAuth } from '../auth'
+import { useAuth } from '../use-auth'
 
 export default function MisReservas() {
   const { sesion } = useAuth()

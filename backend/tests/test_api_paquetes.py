@@ -37,14 +37,16 @@ def test_crear_paquete_con_un_solo_destino_o_repetido(admin, surire_elqui):  # R
     base = {"nombre": "P", "fecha_salida": "2026-12-10", "fecha_regreso": "2026-12-15", "cupo_maximo": 5}
     assert admin.post("/api/paquetes", json={**base, "destino_ids": [surire["id"]]}).status_code == 400
     respuesta = admin.post("/api/paquetes", json={**base, "destino_ids": [surire["id"], surire["id"]]})
-    assert respuesta.status_code == 400 and "repetir" in respuesta.json()["detail"]
+    assert respuesta.status_code == 400
+    assert "repetir" in respuesta.json()["detail"]
 
 
 def test_crear_paquete_con_destino_inexistente(admin, surire_elqui):
     respuesta = admin.post("/api/paquetes", json={
         "nombre": "P", "fecha_salida": "2026-12-10", "fecha_regreso": "2026-12-15",
         "cupo_maximo": 5, "destino_ids": [surire_elqui[0]["id"], 999]})
-    assert respuesta.status_code == 404 and "999" in respuesta.json()["detail"]
+    assert respuesta.status_code == 404
+    assert "999" in respuesta.json()["detail"]
 
 
 def test_destino_no_disponible_no_entra_en_paquetes_nuevos(admin, surire_elqui):  # R8
@@ -55,7 +57,8 @@ def test_destino_no_disponible_no_entra_en_paquetes_nuevos(admin, surire_elqui):
     respuesta = admin.post("/api/paquetes", json={
         "nombre": "Nuevo", "fecha_salida": "2026-12-10", "fecha_regreso": "2026-12-15",
         "cupo_maximo": 5, "destino_ids": ids(surire, otro)})
-    assert respuesta.status_code == 400 and "no disponibles" in respuesta.json()["detail"]
+    assert respuesta.status_code == 400
+    assert "no disponibles" in respuesta.json()["detail"]
 
 
 def test_precio_publicado_no_cambia_si_cambia_el_costo(admin, surire_elqui):  # R7, FR-07
@@ -96,7 +99,8 @@ def test_cupo_disponible_descuenta_reservas(admin, bd, surire_elqui):  # R14, FR
                        " VALUES (1, ?, '2026-10-01', ?, 1)", [(p["id"], 3), (p["id"], 2)])
 
     detalle = admin.get(f"/api/paquetes/{p['id']}").json()
-    assert detalle["personas_reservadas"] == 5 and detalle["cupo_disponible"] == 7
+    assert detalle["personas_reservadas"] == 5
+    assert detalle["cupo_disponible"] == 7
 
 
 def test_modificar_paquete_en_borrador(admin, surire_elqui):
