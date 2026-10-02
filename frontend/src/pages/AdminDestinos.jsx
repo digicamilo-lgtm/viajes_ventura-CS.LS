@@ -72,9 +72,9 @@ export default function AdminDestinos() {
 
       <h3>Nuevo destino</h3>
       <form onSubmit={crear} className="formulario">
-        <label><span>Nombre</span> <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
-        <label><span>Zona</span> <input value={nuevo.zona} onChange={cambiar('zona')} required /></label>
-        <label><span>Descripción</span> <input value={nuevo.descripcion} onChange={cambiar('descripcion')} /></label>
+        <label><span>Nombre</span><input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
+        <label><span>Zona</span><input value={nuevo.zona} onChange={cambiar('zona')} required /></label>
+        <label><span>Descripción</span><input value={nuevo.descripcion} onChange={cambiar('descripcion')} /></label>
         <label><span>Duración (días)</span>
           <input type="number" min="1" value={nuevo.duracion_dias} onChange={cambiar('duracion_dias')} required />
         </label>

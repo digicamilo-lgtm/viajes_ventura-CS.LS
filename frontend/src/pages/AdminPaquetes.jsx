@@ -105,7 +105,7 @@ export default function AdminPaquetes() {
 
       <h3>Nuevo paquete</h3>
       <form onSubmit={crear} className="formulario">
-        <label><span>Nombre</span> <input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
+        <label><span>Nombre</span><input value={nuevo.nombre} onChange={cambiar('nombre')} required /></label>
         <label><span>Fecha de salida</span>
           <input type="date" value={nuevo.fecha_salida} onChange={cambiar('fecha_salida')} required />
         </label>

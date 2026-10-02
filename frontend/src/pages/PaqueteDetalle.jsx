@@ -52,8 +52,7 @@ export default function PaqueteDetalle() {
       ) : (
         <form onSubmit={reservar} className="formulario">
           <label>
-            <span>Personas</span>
-            <input type="number" min="1" max={Math.max(paquete.cupo_disponible, 1)} value={cantidad}
+            <span>Personas</span><input type="number" min="1" max={Math.max(paquete.cupo_disponible, 1)} value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)} required />
           </label>
           <button type="submit" disabled={reservando || paquete.cupo_disponible < 1}>
