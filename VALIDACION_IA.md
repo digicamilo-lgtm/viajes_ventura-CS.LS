@@ -196,3 +196,16 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
   - **`npm run build`:** compila sin errores y deja el build en `backend/static/` (gitignorado, como ya estaba documentado en el Cambio 6).
   - **Recorrido de punta a punta con un navegador real:** se instaló Playwright (Chromium) y se automatizó el flujo completo contra el servidor único (`uvicorn` sirviendo el build): login de administrador → crear 2 destinos → crear y publicar un paquete → cerrar sesión → ver el paquete en el catálogo público → registrar un cliente nuevo → reservar 2 personas → ver la reserva en el historial propio. Se revisaron las capturas de cada paso y no hubo errores de consola ni de página. Los montos calculados coincidieron con las reglas de negocio: precio $516.000 ((310.000 + 120.000) × 1,20, R6) y total de la reserva $1.032.000 (516.000 × 2, R13), con el cupo disponible bajando de 12 a 10 (R14).
   - **Pruebas de backend:** las 129 siguen pasando después del cambio en `app/main.py` (el comodín no interfiere con ninguna ruta `/api`).
+
+## Cambio 11 — Saneamiento completo de issues SonarCloud (2026-10-01)
+
+- **Objetivo:** dejar en cero los issues de New Code reportados por SonarCloud y conservar el comportamiento validado del sistema.
+- **Implementación:** se corrigieron las observaciones de confiabilidad y mantenibilidad en backend, frontend, pruebas y generadores de diagramas:
+  - reemplazo de la expresión regular de correo por una validación sin backtracking superlineal;
+  - renombrado de variables que ocultaban el builtin `id`;
+  - uso de `Annotated` en dependencias FastAPI;
+  - separación de aserciones compuestas y simplificación de bloques `pytest.raises`;
+  - refactorización de la geometría y renderizado BPMN/UML, constantes para literales repetidos y uso de `extend()`;
+  - estabilización del contexto React con `useMemo`, separación del hook `useAuth`, corrección de dependencias `useEffect` y espaciado JSX ambiguo.
+- **Revisión técnica:** los cambios se mantuvieron dentro de las mismas interfaces y reglas de negocio. La corrección de correo conserva los formatos válidos existentes; la refactorización de diagramas fue comprobada regenerando los cuatro SVG; y las pruebas modificadas siguen verificando los mismos resultados.
+- **Validación:** `pytest` pasó con 129 pruebas; `npm run build` y `npm run lint` finalizaron correctamente; `bandit -r app` informó 0 problemas; `pip-audit -r requirements.txt` no encontró vulnerabilidades conocidas; no quedaron diagnósticos del editor. El commit `a461d4d` publicó la limpieza principal y `5c495d1` eliminó el espaciado JSX restante. SonarCloud analizó `5c495d17` con Quality Gate aprobado y **0 issues en New Code**.

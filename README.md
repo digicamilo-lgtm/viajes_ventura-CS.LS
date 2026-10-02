@@ -77,7 +77,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 10 — frontend React/Vite, probado de punta a punta (2026-10-01).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 11 — saneamiento SonarCloud, con 0 issues nuevos (2026-10-01).
 
 ## Próximos pasos
 
@@ -88,5 +88,9 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 5. ~~Sprint 2: integración + seguridad (Camilo, Cambio 9); frontend React/Vite (Logan, Cambio 10).~~ ✅ hecho. Sistema completo, de punta a punta.
 6. Pendiente antes de la entrega (5 oct):
    - Crear las cuentas de los tres socios con `python -m app.crear_administrador` al instalar el sistema (no quedan en el repositorio por diseño, S1).
-   - Opcional: ejecutar SonarCloud sobre el repositorio (sección 7.3), pendiente por requerir vincular una cuenta.
+   - ~~Ejecutar SonarCloud sobre el repositorio.~~ ✅ hecho: Quality Gate aprobado y 0 New Issues (Cambio 11).
    - Defensa argumentativa individual de cada integrante.
+
+## Calidad estática
+
+El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 129 pruebas aprobadas; Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
