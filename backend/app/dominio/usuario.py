@@ -57,7 +57,7 @@ class Usuario(ABC):
         valor = (valor or "").strip().lower()
         local, separador, dominio = valor.partition("@")
         correo_valido = (separador and local and dominio and "." in dominio
-                         and not any(c.isspace() for c in valor))
+                         and "@" not in dominio and not any(c.isspace() for c in valor))
         if not correo_valido:
             raise ReglaNegocioError("El correo electrónico no tiene un formato válido.")
         return valor

@@ -137,7 +137,7 @@ def test_cliente_normaliza_el_correo():                             # R9
 
 
 @pytest.mark.parametrize("campo, valor", [
-    ("nombre", "   "), ("rut", ""), ("correo", "no-es-un-correo"), ("telefono", ""),
+    ("nombre", "   "), ("rut", ""), ("correo", "no-es-un-correo"), ("correo", "a@b@c.com"), ("telefono", ""),
 ])
 def test_cliente_rechaza_datos_invalidos(campo, valor):              # R9
     datos = dict(nombre="Carolina Reyes", rut="11111111-1", correo="carolina@example.com",
