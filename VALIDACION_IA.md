@@ -251,3 +251,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** en la sección 7.1, la fila de token y la de cuentas de administrador. En la sección 6, una fila nueva sobre la clave JWT (clave por defecto frente a obligatoria al arrancar). Se corrigió el conteo de pruebas en las dos menciones que quedaban en 130.
 - **Revisión técnica:** se decidió no añadir una clave por defecto, porque permitiría fabricar tokens de administrador. Esa decisión queda en la tabla de IA, con su justificación, para que la defensa pueda sostenerla.
 - **Validación:** el `.docx` pasó el validador del skill (724 → 727 párrafos, sin errores de esquema). La revisión visual en Word queda pendiente para el equipo.
+
+## Cambio 18 — Informe Técnico alineado con la guía de evaluación (2026-10-04)
+
+- **Objetivo:** revisar el Informe contra la guía de la Unidad 4 (`TI3021_U4_ES_GUÍA.pdf`) y corregir lo que no coincidía.
+- **Implementación:** se renombró la sección 6 a «Justificación técnica y uso crítico de herramientas de IA», porque la guía pide una justificación técnica explícita. En la sección 3 se cambió «se implementará» por «se implementó», porque el diagrama de clases ya está implementado. En la sección 7.1 se indicó que PyJWT es de PyPI oficial, igual que bcrypt, para cumplir el criterio de librerías oficiales.
+- **Revisión técnica:** la guía no menciona que el diseño deba hacerse antes del código. Se mantiene la frase de la sección 7 porque el equipo confirma que los diseños se hicieron antes de programar. Sí se verificó que el Informe cubre todos los entregables de la guía (requerimientos, UML y BPMN, planificación ágil, justificación, código fuente y aplicación funcional con autenticación y persistencia).
+- **Validación:** el `.docx` pasó el validador del skill (727 párrafos, sin cambios de estructura). La revisión visual en Word queda pendiente.
