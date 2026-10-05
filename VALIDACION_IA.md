@@ -272,3 +272,13 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** `crear_administrador_desde_entorno()` en `app/crear_administrador.py` crea el administrador si `ADMIN_CORREO` y `ADMIN_CONTRASENA` están definidas y la cuenta no existe. `ciclo_de_vida` en `app/main.py` la llama después de crear el esquema. La contraseña se guarda con bcrypt; no queda en el código ni en el repo.
 - **Revisión técnica:** no es un registro público, porque solo actúan las variables que define quien despliega. Es un compromiso aceptado para la demo: la contraseña queda en la configuración de Render, algo que no haríamos en producción. Si no se definen las variables, no pasa nada.
 - **Validación:** `pytest` pasa con 133 pruebas, incluidas dos nuevas: crea el administrador sin duplicarlo y no hace nada sin variables.
+
+## Cambio 21 — Cierre del proyecto: conclusiones, despliegue y documentación (2026-10-05)
+
+- **Objetivo:** cerrar el proyecto para la entrega: agregar las conclusiones al Informe Técnico, registrar el despliegue público y dejar el README y esta bitácora al día.
+- **Implementación:**
+  - Informe Técnico: nueva sección 9 «Conclusiones», con los logros, el aprendizaje principal (medir el sistema en ejecución), el uso de IA, las limitaciones conocidas y el trabajo futuro. En la sección 8 se agregó el despliegue en Render.
+  - README: estado final, sección de despliegue (URL, `render.yaml`, variables de entorno y limitación del disco gratuito), y conteo de pruebas actualizado a 133.
+- **Revisión técnica:** las conclusiones se redactaron a partir de la evidencia del proyecto: 133 pruebas, las mediciones de concurrencia y de tiempo de login, y los cambios documentados en esta bitácora. No incluyen credenciales. Se declaran explícitamente las limitaciones: SQLite en un disco efímero, sin límite de intentos de login y sin cancelación de reservas.
+- **Incidente de publicación:** al preparar la copia pública del repositorio para Render, el commit del Cambio 20 incluyó por error tres archivos de materiales del curso (PDF del caso, guía y rúbrica) en la copia pública. Se detectó en la verificación posterior y se corrigió reconstruyendo el historial de esa copia sin esos archivos, con force push únicamente a la copia pública. El repositorio del equipo no se modificó en ese paso. Esos archivos pudieron estar accesibles durante unos minutos; queda pendiente borrar y recrear la copia si el equipo lo considera necesario.
+- **Validación:** `pytest` pasa con 133 pruebas. El Informe pasó el validador del skill de docx (743 párrafos, sin errores de esquema). La copia pública verificada no contiene archivos PDF ni XLSX. El despliegue responde en la página principal, en `/admin` y devuelve 401 en la API sin sesión.

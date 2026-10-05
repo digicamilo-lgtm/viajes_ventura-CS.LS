@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** Sistema completo — Informe Técnico Grupal (todas las secciones), backend (129 pruebas) y frontend React/Vite, probado de punta a punta con un navegador real. Destinos (HU-01) y Paquetes (HU-02), integración y seguridad: Camilo Sepúlveda. Clientes y seguridad (HU-03), Reservas (HU-04) y frontend (HU-05): Logan Silva. Pendiente: defensa argumentativa individual.
+**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 133 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 9) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
 
 ## Material de referencia
 
@@ -27,7 +27,7 @@ Estructura de `backend/`, fiel al diagrama de clases de la sección 3.3 del Info
 - `app/api/` — rutas FastAPI y esquemas Pydantic (solo tipos y largos; no repiten reglas de negocio). Las rutas que modifican el catálogo exigen sesión de administrador.
 - `app/database.py` — conexión y esquema completo (6 tablas).
 - `app/crear_administrador.py` — crea la cuenta de un socio administrador desde la consola.
-- `tests/` — 129 pruebas: dominio, seguridad, API, concurrencia e integración de punta a punta (`test_integracion.py`), sobre una base SQLite temporal.
+- `tests/` — 133 pruebas: dominio, seguridad, API, concurrencia e integración de punta a punta (`test_integracion.py`), sobre una base SQLite temporal.
 
 Instalar y ejecutar (Windows, desde `backend/`):
 
@@ -97,7 +97,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 20 — administrador inicial desde variables de entorno para el despliegue (2026-10-05).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 21 — cierre del proyecto: conclusiones, despliegue y documentación actualizada (2026-10-05).
 
 ## Próximos pasos
 
@@ -109,8 +109,16 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 6. Pendiente antes de la entrega (5 oct):
    - Crear las cuentas de los tres socios con `python -m app.crear_administrador` al instalar el sistema (no quedan en el repositorio por diseño, S1).
    - ~~Ejecutar SonarCloud sobre el repositorio.~~ ✅ hecho: Quality Gate aprobado y 0 New Issues (Cambio 11).
-   - Defensa argumentativa individual de cada integrante.
+   - Defensa argumentativa individual de cada integrante (presentación y guiones en `docs/`, fuera del repositorio).
+
+## Despliegue
+
+- **Servicio público (demo):** https://viajes-aventura-o5p1.onrender.com (plan gratuito de Render).
+- **Configuración:** `render.yaml` en la raíz. El build compila el frontend y el servicio ejecuta `uvicorn` sobre el puerto que asigna Render.
+- **Variables de entorno en Render:** `JWT_SECRET` (se genera sola), `ADMIN_CORREO` y `ADMIN_CONTRASENA`. Con estas dos últimas, la aplicación crea el administrador al arrancar si no existe. La contraseña nunca va en el repositorio.
+- **Limitación:** el plan gratuito no conserva el disco. La base de datos se reinicia cada vez que el servicio se reinicia, así que la demo puede volver a su estado inicial.
+- **Copia pública:** el despliegue usa una copia del repositorio sin los materiales del curso (PDF del caso, guía y rúbrica). Esos archivos se mantienen solo en el repositorio del equipo.
 
 ## Calidad estática
 
-El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 131 pruebas aprobadas (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
+El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 133 pruebas aprobadas (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
