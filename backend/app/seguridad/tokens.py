@@ -32,6 +32,11 @@ def _clave_secreta() -> str:
     return clave
 
 
+def verificar_configuracion() -> None:
+    """Falla al arrancar si JWT_SECRET falta o es corta, en vez de fallar en cada login."""
+    _clave_secreta()
+
+
 def crear_token(usuario_id: int, rol: str) -> str:
     if rol not in ROLES:
         raise ValueError(f"Rol desconocido: {rol}")

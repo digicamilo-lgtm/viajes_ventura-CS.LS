@@ -77,7 +77,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 14 — contraseña del administrador visible como asteriscos (2026-10-04).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 15 — el servidor no arranca sin JWT_SECRET, con mensaje claro (2026-10-04).
 
 ## Próximos pasos
 
@@ -93,4 +93,4 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 
 ## Calidad estática
 
-El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 130 pruebas aprobadas (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
+El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 131 pruebas aprobadas (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.

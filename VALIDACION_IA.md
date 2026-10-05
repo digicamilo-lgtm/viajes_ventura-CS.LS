@@ -230,3 +230,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** `pedir_contrasena()` en `backend/app/crear_administrador.py` lee tecla a tecla con `msvcrt` en Windows, imprime `*` por cada carácter y maneja el retroceso. Fuera de Windows o sin terminal interactiva, sigue usando `getpass`.
 - **Revisión técnica:** se mantiene la regla de no pasar la contraseña por argumentos. Las teclas especiales (flechas, F1…) se descartan para no agregar caracteres basura a la contraseña.
 - **Validación:** se simuló la entrada de teclas (`a`, `b`, `c`, retroceso, `d`, Enter): el resultado fue `abd` y la pantalla mostró asteriscos y el borrado correcto. `pytest` pasa (130 pruebas) y `--help` funciona. La prueba final real debe hacerla el equipo en una terminal.
+
+## Cambio 15 — El servidor avisa al arrancar si falta JWT_SECRET (2026-10-04)
+
+- **Objetivo:** un integrante inició sesión de administrador y recibió «Error interno del servidor» (500). La causa era que `uvicorn` se levantó sin la variable `JWT_SECRET`: la clave de firma solo se leía al emitir un token, así que el fallo aparecía en el login y no al arrancar.
+- **Implementación:** `verificar_configuracion()` en `app/seguridad/tokens.py` valida la clave, y `ciclo_de_vida` en `app/main.py` la llama antes de crear la base. Si falta o tiene menos de 32 bytes, el servidor no arranca y muestra el motivo.
+- **Revisión técnica:** no se añadió una clave por defecto, porque una clave conocida permitiría fabricar tokens de administrador. `crear_administrador` no necesita la clave (solo hashea), así que sigue funcionando sin ella. Las pruebas ya fijan `JWT_SECRET`, así que no cambian.
+- **Validación:** `pytest` pasa con 131 pruebas, incluida una nueva que comprueba que la aplicación no arranca sin la clave. Se probó el arranque real con `uvicorn` sin la variable: falla con «Falta configurar la variable de entorno JWT_SECRET».

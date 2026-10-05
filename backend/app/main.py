@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.api import administradores, clientes, destinos, paquetes, reservas
 from app.database import conectar, crear_esquema
 from app.dominio import NoAutenticadoError, NoAutorizadoError, NoEncontradoError, ReglaNegocioError
+from app.seguridad import verificar_configuracion
 
 log = logging.getLogger("viajes_aventura")
 STATIC = Path(__file__).resolve().parent.parent / "static"
@@ -22,6 +23,7 @@ STATIC = Path(__file__).resolve().parent.parent / "static"
 
 @asynccontextmanager
 async def ciclo_de_vida(app: FastAPI):
+    verificar_configuracion()
     conexion = conectar()
     try:
         crear_esquema(conexion)

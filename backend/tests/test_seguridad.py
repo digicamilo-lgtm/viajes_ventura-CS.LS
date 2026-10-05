@@ -85,3 +85,13 @@ def test_simular_verificacion_ejecuta_bcrypt(monkeypatch):
     monkeypatch.setattr(bcrypt, "checkpw", lambda *a: llamadas.append(1) or original(*a))
     simular_verificacion("cualquier-clave")
     assert llamadas == [1]
+
+
+def test_la_aplicacion_no_arranca_sin_jwt_secret(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import app
+    monkeypatch.setenv("VIAJES_DB", str(tmp_path / "prueba.db"))
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    with pytest.raises(RuntimeError, match="JWT_SECRET"):
+        with TestClient(app):
+            pass
