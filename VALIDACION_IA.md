@@ -265,3 +265,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** el pie de la primera hoja se copió a todas las partes de pie del documento (once archivos). El número de página sigue siendo un campo automático, así que cambia en cada hoja.
 - **Revisión técnica:** el documento no usa páginas pares distintas, así que el cambio llega a todas las hojas. El texto se dejó como lo escribió el equipo, sin corregir la ausencia de tilde en «Sepulveda».
 - **Validación:** el `.docx` pasó el validador del skill (727 párrafos, sin cambios de estructura). La revisión visual en Word queda pendiente.
+
+## Cambio 20 — Administrador inicial desde variables de entorno para el despliegue (2026-10-05)
+
+- **Objetivo:** en el plan gratuito de Render no hay consola, así que no se puede correr `app.crear_administrador` sobre la base del servicio. Hace falta una forma de crear la cuenta de la demo al arrancar.
+- **Implementación:** `crear_administrador_desde_entorno()` en `app/crear_administrador.py` crea el administrador si `ADMIN_CORREO` y `ADMIN_CONTRASENA` están definidas y la cuenta no existe. `ciclo_de_vida` en `app/main.py` la llama después de crear el esquema. La contraseña se guarda con bcrypt; no queda en el código ni en el repo.
+- **Revisión técnica:** no es un registro público, porque solo actúan las variables que define quien despliega. Es un compromiso aceptado para la demo: la contraseña queda en la configuración de Render, algo que no haríamos en producción. Si no se definen las variables, no pasa nada.
+- **Validación:** `pytest` pasa con 133 pruebas, incluidas dos nuevas: crea el administrador sin duplicarlo y no hace nada sin variables.

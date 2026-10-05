@@ -13,6 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.api import administradores, clientes, destinos, paquetes, reservas
+from app.crear_administrador import crear_administrador_desde_entorno
 from app.database import conectar, crear_esquema
 from app.dominio import NoAutenticadoError, NoAutorizadoError, NoEncontradoError, ReglaNegocioError
 from app.seguridad import verificar_configuracion
@@ -27,6 +28,7 @@ async def ciclo_de_vida(app: FastAPI):
     conexion = conectar()
     try:
         crear_esquema(conexion)
+        crear_administrador_desde_entorno(conexion)
     finally:
         conexion.close()
     yield

@@ -75,5 +75,18 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def crear_administrador_desde_entorno(conexion) -> None:
+    """Crea la cuenta de administrador si ADMIN_CORREO y ADMIN_CONTRASENA están definidas (despliegue)."""
+    correo = os.environ.get("ADMIN_CORREO")
+    contrasena = os.environ.get("ADMIN_CONTRASENA")
+    if not correo or not contrasena:
+        return
+    repo = AdministradorRepositorio(conexion)
+    if repo.buscar_por_correo(correo):
+        return
+    repo.guardar(Administrador(nombre=os.environ.get("ADMIN_NOMBRE", "Administrador"),
+                               correo=correo, hash_contrasena=hashear(contrasena)))
+
+
 if __name__ == "__main__":
     sys.exit(main())
