@@ -244,3 +244,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** la sección «Instalar y ejecutar» del README se reescribió en tres pasos: crear el administrador, generar la clave con `secrets.token_urlsafe(32)` y definirla en la misma terminal antes de levantar `uvicorn`. Se explica el mensaje de error que aparece si falta o es corta.
 - **Revisión técnica:** no cambió código. Se mantiene la decisión de no tener clave por defecto (Cambio 15) y de no subirla al repositorio.
 - **Validación:** los comandos del README se comprobaron en esta máquina: generación de la clave, creación del administrador y arranque del servidor con la clave definida.
+
+## Cambio 17 — Informe Técnico actualizado con el arranque, el administrador y el conteo de pruebas (2026-10-04)
+
+- **Objetivo:** que el Informe describa lo que el sistema hace hoy: la aplicación no arranca sin `JWT_SECRET` (Cambio 15), la contraseña del administrador se muestra con asteriscos (Cambio 14), y el conteo de pruebas es 131 (Cambio 15 agregó una).
+- **Implementación:** en la sección 7.1, la fila de token y la de cuentas de administrador. En la sección 6, una fila nueva sobre la clave JWT (clave por defecto frente a obligatoria al arrancar). Se corrigió el conteo de pruebas en las dos menciones que quedaban en 130.
+- **Revisión técnica:** se decidió no añadir una clave por defecto, porque permitiría fabricar tokens de administrador. Esa decisión queda en la tabla de IA, con su justificación, para que la defensa pueda sostenerla.
+- **Validación:** el `.docx` pasó el validador del skill (724 → 727 párrafos, sin errores de esquema). La revisión visual en Word queda pendiente para el equipo.
