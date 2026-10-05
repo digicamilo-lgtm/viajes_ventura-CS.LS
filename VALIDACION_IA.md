@@ -237,3 +237,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** `verificar_configuracion()` en `app/seguridad/tokens.py` valida la clave, y `ciclo_de_vida` en `app/main.py` la llama antes de crear la base. Si falta o tiene menos de 32 bytes, el servidor no arranca y muestra el motivo.
 - **Revisión técnica:** no se añadió una clave por defecto, porque una clave conocida permitiría fabricar tokens de administrador. `crear_administrador` no necesita la clave (solo hashea), así que sigue funcionando sin ella. Las pruebas ya fijan `JWT_SECRET`, así que no cambian.
 - **Validación:** `pytest` pasa con 131 pruebas, incluida una nueva que comprueba que la aplicación no arranca sin la clave. Se probó el arranque real con `uvicorn` sin la variable: falla con «Falta configurar la variable de entorno JWT_SECRET».
+
+## Cambio 16 — README con los pasos de arranque y generación de JWT_SECRET (2026-10-04)
+
+- **Objetivo:** el README no explicaba cómo generar la clave `JWT_SECRET` de al menos 32 caracteres, y eso dejaba sin resolver la parte de arranque para quien instale el sistema en la entrega.
+- **Implementación:** la sección «Instalar y ejecutar» del README se reescribió en tres pasos: crear el administrador, generar la clave con `secrets.token_urlsafe(32)` y definirla en la misma terminal antes de levantar `uvicorn`. Se explica el mensaje de error que aparece si falta o es corta.
+- **Revisión técnica:** no cambió código. Se mantiene la decisión de no tener clave por defecto (Cambio 15) y de no subirla al repositorio.
+- **Validación:** los comandos del README se comprobaron en esta máquina: generación de la clave, creación del administrador y arranque del servidor con la clave definida.

@@ -34,13 +34,33 @@ Instalar y ejecutar (Windows, desde `backend/`):
 ```
 py -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m pytest                       # pruebas
-set JWT_SECRET=una-clave-aleatoria-de-al-menos-32-bytes
-.venv\Scripts\python -m app.crear_administrador --nombre "Paulina Ovalle" --correo paulina@viajesaventura.cl
-.venv\Scripts\python -m uvicorn app.main:app --reload # API en http://127.0.0.1:8000/docs
+.venv\Scripts\python -m pytest                       # pruebas (opcional)
 ```
 
-La base de datos se crea sola en `backend/viajes.db`, que está ignorada por git. Se puede usar otra ruta con la variable de entorno `VIAJES_DB`. `JWT_SECRET` es obligatoria y debe tener al menos 32 bytes; en pruebas la fija `tests/conftest.py`. `crear_administrador` pide la contraseña sin mostrarla (mínimo 12 caracteres); no existe registro público de administradores.
+**1. Crear la cuenta de administrador** (una sola vez; no existe registro público). Pide la contraseña sin mostrarla, con asteriscos, y debe tener al menos 12 caracteres:
+
+```
+.venv\Scripts\python -m app.crear_administrador --nombre "Paulina Ovalle" --correo paulina@viajesaventura.cl
+```
+
+**2. Generar la clave `JWT_SECRET`** (obligatoria, al menos 32 caracteres). Es la clave con la que se firman los tokens de sesión, así que no se escribe en el código ni se sube a git. Genérala con:
+
+```
+.venv\Scripts\python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+**3. Definir la clave y levantar el servidor**, en la **misma** ventana (PowerShell):
+
+```
+$env:JWT_SECRET = "pega-aqui-la-clave-generada"
+.venv\Scripts\python -m uvicorn app.main:app --reload
+```
+
+En CMD la sintaxis es `set JWT_SECRET=...`. Si la variable no está definida en esa ventana, o tiene menos de 32 caracteres, el servidor no arranca y muestra `Falta configurar la variable de entorno JWT_SECRET`.
+
+API y documentación: http://127.0.0.1:8000/docs · Aplicación: http://127.0.0.1:8000/
+
+La base de datos se crea sola en `backend/viajes.db`, que está ignorada por git. Se puede usar otra ruta con la variable de entorno `VIAJES_DB`. En las pruebas, `tests/conftest.py` fija `JWT_SECRET` por su cuenta.
 
 Para usar las rutas protegidas desde `/docs`: iniciar sesión en `POST /api/administradores/sesiones` (o `/api/clientes/sesiones`), copiar el `token` y pegarlo en el botón **Authorize**.
 
@@ -77,7 +97,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 15 — el servidor no arranca sin JWT_SECRET, con mensaje claro (2026-10-04).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 16 — README con los pasos de arranque y generación de JWT_SECRET (2026-10-04).
 
 ## Próximos pasos
 
