@@ -3,11 +3,12 @@
 Uso, desde la carpeta backend/:
     python -m app.crear_administrador --nombre "Paulina Ovalle" --correo paulina@viajesaventura.cl
 
-La contraseña se pide sin mostrarla en pantalla y nunca pasa por la línea de
-comandos, donde quedaría en el historial de la terminal.
+La contraseña se pide sin mostrarla: cada carácter se reemplaza por un asterisco.
+Nunca pasa por la línea de comandos, donde quedaría en el historial de la terminal.
 """
 import argparse
 import getpass
+import os
 import sys
 
 from app.database import conectar, crear_esquema
@@ -18,17 +19,41 @@ from app.seguridad import hashear
 LARGO_MINIMO = 12
 
 
+def pedir_contrasena(mensaje: str) -> str:
+    if os.name != "nt" or not sys.stdin.isatty():
+        return getpass.getpass(mensaje)
+    import msvcrt
+    print(mensaje, end="", flush=True)
+    caracteres = []
+    while True:
+        tecla = msvcrt.getwch()
+        if tecla in ("\r", "\n"):
+            print()
+            return "".join(caracteres)
+        if tecla == "\x03":
+            raise KeyboardInterrupt
+        if tecla == "\b":
+            if caracteres:
+                caracteres.pop()
+                print("\b \b", end="", flush=True)
+        elif tecla in ("\x00", "\xe0"):
+            msvcrt.getwch()
+        else:
+            caracteres.append(tecla)
+            print("*", end="", flush=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Crea una cuenta de administrador de Viajes Aventura.")
     parser.add_argument("--nombre", required=True)
     parser.add_argument("--correo", required=True)
     args = parser.parse_args(argv)
 
-    contrasena = getpass.getpass("Contraseña: ")
+    contrasena = pedir_contrasena("Contraseña: ")
     if len(contrasena) < LARGO_MINIMO:
         print(f"La contraseña debe tener al menos {LARGO_MINIMO} caracteres.", file=sys.stderr)
         return 1
-    if getpass.getpass("Repite la contraseña: ") != contrasena:
+    if pedir_contrasena("Repite la contraseña: ") != contrasena:
         print("Las contraseñas no coinciden.", file=sys.stderr)
         return 1
 

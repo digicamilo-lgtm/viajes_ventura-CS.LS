@@ -223,3 +223,10 @@ A partir de este cambio, cualquier avance del Informe Técnico se documenta aqu�
 - **Implementación:** se revisó cada indicador contra la evidencia del repositorio. Se corrigió en el Informe Técnico el conteo de pruebas de 129 a 130 (tres menciones; la fila histórica de httpx que menciona 49 pruebas se dejó igual, porque describe el momento en que se hizo el cambio). Se preparó una guía de defensa individual para el integrante que la rinde, fuera del repositorio.
 - **Revisión técnica:** los indicadores individuales (I.4, I.8, I.12, I.16, I.19, I.20) suman alrededor del 51 % de la ponderación, así que la defensa pesa más que el producto. Se verificó en el código las afirmaciones que la guía hace sobre seguridad y reservas: la transacción exclusiva existe (`repositorios/base.py`) y no hay límite de intentos de login (`grep` sin resultados), lo cual se declara como riesgo pendiente y no como mecanismo implementado.
 - **Validación:** el `.docx` pasó el validador del skill (724 párrafos, sin cambios de estructura). Revisión visual con Word pendiente por parte del equipo.
+
+## Cambio 14 — Contraseña del administrador visible como asteriscos (2026-10-04)
+
+- **Objetivo:** al crear la cuenta de administrador con `python -m app.crear_administrador`, la contraseña no se veía mientras se escribía. Se muestra un asterisco por carácter, sin que la contraseña pase por la línea de comandos.
+- **Implementación:** `pedir_contrasena()` en `backend/app/crear_administrador.py` lee tecla a tecla con `msvcrt` en Windows, imprime `*` por cada carácter y maneja el retroceso. Fuera de Windows o sin terminal interactiva, sigue usando `getpass`.
+- **Revisión técnica:** se mantiene la regla de no pasar la contraseña por argumentos. Las teclas especiales (flechas, F1…) se descartan para no agregar caracteres basura a la contraseña.
+- **Validación:** se simuló la entrada de teclas (`a`, `b`, `c`, retroceso, `d`, Enter): el resultado fue `abd` y la pantalla mostró asteriscos y el borrado correcto. `pytest` pasa (130 pruebas) y `--help` funciona. La prueba final real debe hacerla el equipo en una terminal.
