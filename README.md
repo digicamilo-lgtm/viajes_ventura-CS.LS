@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 133 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 9) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
+**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 133 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 8) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
 
 ## Material de referencia
 
@@ -97,7 +97,7 @@ Si se modifica un diagrama, hay que regenerar su `.png` (los SVG se pueden expor
 
 ## Trazabilidad
 
-Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 21 — cierre del proyecto: conclusiones, despliegue y documentación actualizada (2026-10-05).
+Cada cambio del proyecto (código, documentación o avance del Informe Técnico) se registra en `VALIDACION_IA.md` (objetivo, implementación, revisión técnica y validación) y se refleja en este README. **Convención del repo:** cualquiera de los dos integrantes (y la IA con la que trabaje cada uno) debe seguir este mismo ciclo — actualizar `README.md`, `VALIDACION_IA.md` y, si corresponde, `Informe_Tecnico_Viajes_Aventura.docx`, en cada cambio, antes de hacer commit. Último cambio: Cambio 22 — se quita la sección de estado del Informe y las conclusiones pasan a ser la sección 8 (2026-10-05).
 
 ## Próximos pasos
 
