@@ -37,10 +37,10 @@ py -m venv .venv
 .venv\Scripts\python -m pytest                       # pruebas (opcional)
 ```
 
-**1. Crear la cuenta de administrador** (una sola vez; no existe registro público). Pide la contraseña sin mostrarla, con asteriscos, y debe tener al menos 12 caracteres:
+**1. Cuenta de administrador:** no existe registro público. Si clonas el repositorio y lo ejecutas en tu equipo, debes crear una cuenta de administrador con el comando siguiente (contraseña con asteriscos, mínimo 12 caracteres). Si solo ingresas a la URL de la demo, el administrador ya existe, creado desde las variables de entorno de Render:
 
 ```
-.venv\Scripts\python -m app.crear_administrador --nombre "Paulina Ovalle" --correo paulina@viajesaventura.cl
+.venv\Scripts\python -m app.crear_administrador --nombre "Nombre Apellido" --correo correo@dominio.cl
 ```
 
 **2. Generar la clave `JWT_SECRET`** (obligatoria, al menos 32 caracteres). Es la clave con la que se firman los tokens de sesión, así que no se escribe en el código ni se sube a git. Genérala con:
@@ -83,7 +83,7 @@ npm install
 npm run dev      # http://localhost:5173, con proxy /api -> :8000
 ```
 
-Para la entrega: `npm run build` compila directamente a `backend/static/` (configurado en `vite.config.js`); luego `uvicorn app.main:app` sirve todo desde `:8000`, un único comando. Para probar el flujo completo hace falta al menos un administrador (`python -m app.crear_administrador`) y un destino/paquete publicado antes de que el catálogo público muestre algo.
+Para la entrega: `npm run build` compila directamente a `backend/static/` (configurado en `vite.config.js`); luego `uvicorn app.main:app` sirve todo desde `:8000`, un único comando. Para probar el flujo completo hace falta un administrador (paso 1) y un destino/paquete publicado antes de que el catálogo público muestre algo.
 
 ## Diagramas
 
@@ -107,15 +107,14 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 4. ~~Implementar por dominios: esqueleto + HU-01 + HU-02 (Camilo, Cambio 6); HU-03 + HU-04 (Logan, Cambio 7).~~ ✅ hecho.
 5. ~~Sprint 2: integración + seguridad (Camilo, Cambio 9); frontend React/Vite (Logan, Cambio 10).~~ ✅ hecho. Sistema completo, de punta a punta.
 6. Pendiente antes de la entrega (5 oct):
-   - Crear las cuentas de los tres socios con `python -m app.crear_administrador` al instalar el sistema (no quedan en el repositorio por diseño, S1).
    - ~~Ejecutar SonarCloud sobre el repositorio.~~ ✅ hecho: Quality Gate aprobado y 0 New Issues (Cambio 11).
-   - Defensa argumentativa individual de cada integrante (presentación y guiones en `docs/`, fuera del repositorio).
+   - ~~Exposición del equipo.~~ ✅ hecha. Las cuentas de administrador las crea el profesor.
 
 ## Despliegue
 
 - **Servicio público (demo):** https://viajes-aventura-o5p1.onrender.com (plan gratuito de Render).
 - **Configuración:** `render.yaml` en la raíz. El build compila el frontend y el servicio ejecuta `uvicorn` sobre el puerto que asigna Render.
-- **Variables de entorno en Render:** `JWT_SECRET` (se genera sola), `ADMIN_CORREO` y `ADMIN_CONTRASENA`. Con estas dos últimas, la aplicación crea el administrador al arrancar si no existe. La contraseña nunca va en el repositorio.
+- **Variables de entorno en Render:** `JWT_SECRET` (se genera sola), `ADMIN_CORREO` y `ADMIN_CONTRASENA`. Con estas dos últimas, la aplicación crea el administrador al arrancar si no existe; el profesor es quien define esas credenciales. La contraseña nunca va en el repositorio.
 - **Limitación:** el plan gratuito no conserva el disco. La base de datos se reinicia cada vez que el servicio se reinicia, así que la demo puede volver a su estado inicial.
 - **Copia pública:** el despliegue usa una copia del repositorio sin los materiales del curso (PDF del caso, guía y rúbrica). Esos archivos se mantienen solo en el repositorio del equipo.
 
