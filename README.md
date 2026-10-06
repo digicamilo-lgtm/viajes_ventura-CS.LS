@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 140 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 8) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
+**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 140 pruebas, frontend React/Vite probado en navegador (la cancelación y modificación de reservas se verificaron con pruebas de API y compilación), Informe Técnico completo (secciones 1 a 8) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
 
 ## Material de referencia
 
@@ -117,8 +117,8 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 - **Configuración:** `render.yaml` en la raíz. El build compila el frontend y el servicio ejecuta `uvicorn` sobre el puerto que asigna Render.
 - **Variables de entorno en Render:** `JWT_SECRET` (se genera sola), `ADMIN_CORREO` y `ADMIN_CONTRASENA`. Con estas dos últimas, la aplicación crea el administrador al arrancar si no existe; el profesor es quien define esas credenciales. La contraseña nunca va en el repositorio.
 - **Limitación:** el plan gratuito no conserva el disco. La base de datos se reinicia cada vez que el servicio se reinicia, así que la demo puede volver a su estado inicial.
-- **Copia pública:** el despliegue usa una copia del repositorio sin los materiales del curso (PDF del caso, guía y rúbrica). Esos archivos se mantienen solo en el repositorio del equipo.
+- **Copia pública:** el despliegue usa una copia del repositorio sin los materiales del curso (PDF del caso, guía y rúbrica, en `docs/curso/`). Esos archivos se mantienen solo en el repositorio del equipo.
 
 ## Calidad estática
 
-El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 140 pruebas aprobadas (133 en ese análisis más 7 de cancelación y modificación de reservas, agregadas después) (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
+El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 140 pruebas aprobadas: las 133 de ese análisis, más 7 de cancelación y modificación de reservas agregadas después. En el Cambio 12 se añadió una prueba tras detectar que la validación de correo aceptaba más de una arroba. Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
