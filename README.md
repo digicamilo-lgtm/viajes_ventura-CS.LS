@@ -8,10 +8,10 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 ## Material de referencia
 
-- `POO-TI3V21-Caso-Viajes-Aventura.pdf` — caso de estudio.
-- `TI3021_U4_ES_GUÍA.pdf` — guía de la evaluación.
-- `rubrica 4.xlsx` — Rúbrica N°2 (Informe Técnico Grupal y Defensa Argumentativa Individual), con los 5 criterios 4.1.1-4.1.5 y sus indicadores grupales/individuales.
-- `6_poo_proyecto_consolidacion_rubensch.pdf` — material de consolidación del curso.
+- `docs/curso/POO-TI3V21-Caso-Viajes-Aventura.pdf` — caso de estudio.
+- `docs/curso/TI3021_U4_ES_GUÍA.pdf` — guía de la evaluación.
+- `docs/curso/rubrica 4.xlsx` — Rúbrica N°2 (Informe Técnico Grupal y Defensa Argumentativa Individual), con los 5 criterios 4.1.1-4.1.5 y sus indicadores grupales/individuales.
+- `docs/curso/6_poo_proyecto_consolidacion_rubensch.pdf` — material de consolidación del curso.
 
 ## Entregables
 
