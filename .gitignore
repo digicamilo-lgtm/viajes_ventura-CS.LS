@@ -16,3 +16,9 @@ frontend/dist/
 
 # Archivos temporales de Office
 ~$*
+
+# Materiales de defensa individual (fuera del repositorio)
+docs/guion_defensa_*.md
+docs/guion_defensa_*.docx
+docs/defensa_presentacion.pptx
+docs/entrega_acceso.md

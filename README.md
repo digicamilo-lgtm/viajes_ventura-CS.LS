@@ -15,7 +15,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 ## Entregables
 
-- `Informe_Tecnico_Viajes_Aventura.docx` — Informe Técnico Grupal (requerimientos, modelamiento UML/BPMN, metodología ágil, arquitectura y seguridad). Se evalúa con la Rúbrica N°2 (30% de la nota).
+- `Informe_Tecnico_Viajes_Aventura.pdf` — Informe Técnico Grupal (requerimientos, modelamiento UML/BPMN, metodología ágil, arquitectura y seguridad). Se evalúa con la Rúbrica N°2 (30% de la nota).
 
 ## Backend (Python + FastAPI + SQLite)
 
