@@ -99,3 +99,111 @@ def test_mis_reservas_solo_muestra_las_propias(cliente):            # FR-15, R11
 
     assert respuesta_andres.json() == []
     assert len(respuesta_carolina.json()) == 1
+
+
+def _reservar(c, paquete_id: int, personas: int, encabezados: dict) -> dict:
+    respuesta = c.post("/api/reservas", json={"paquete_id": paquete_id, "cantidad_personas": personas},
+                       headers=encabezados)
+    assert respuesta.status_code == 201, respuesta.text
+    return respuesta.json()
+
+
+def test_cancelar_marca_la_reserva_y_libera_el_cupo(cliente):       # S4, R14
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))                       # cupo 12
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 12, encabezados)
+    assert cliente.post("/api/reservas", json={"paquete_id": p["id"], "cantidad_personas": 1},
+                        headers=encabezados).status_code == 400     # cupo lleno
+
+    respuesta = cliente.delete(f"/api/reservas/{reserva['id']}", headers=encabezados)
+
+    assert respuesta.status_code == 200, respuesta.text
+    assert respuesta.json()["cancelada"] is True
+    assert _reservar(cliente, p["id"], 12, encabezados)["cancelada"] is False  # cupo liberado
+
+
+def test_cancelar_solo_la_reserva_propia(cliente):                  # R11
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 2, encabezados)
+    otros = cliente_autenticado(cliente, correo="otra@example.com", nombre="Otra Persona")
+
+    respuesta = cliente.delete(f"/api/reservas/{reserva['id']}", headers=otros)
+
+    assert respuesta.status_code == 404
+    assert cliente.get("/api/reservas", headers=encabezados).json()[0]["cancelada"] is False
+
+
+def test_no_se_cancela_dos_veces(cliente):                          # S4
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 2, encabezados)
+    cliente.delete(f"/api/reservas/{reserva['id']}", headers=encabezados)
+
+    respuesta = cliente.delete(f"/api/reservas/{reserva['id']}", headers=encabezados)
+
+    assert respuesta.status_code == 400
+    assert "ya está cancelada" in respuesta.json()["detail"]
+
+
+def test_no_se_cancela_un_paquete_que_ya_partio(cliente):           # S4
+    from datetime import date
+    from app.api.dependencias import obtener_hoy
+    from app.main import app
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids), fecha_salida="2026-10-02", fecha_regreso="2026-10-05")
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 2, encabezados)
+    app.dependency_overrides[obtener_hoy] = lambda: date(2026, 10, 3)
+
+    respuesta = cliente.delete(f"/api/reservas/{reserva['id']}", headers=encabezados)
+
+    assert respuesta.status_code == 400
+    assert "ya partió" in respuesta.json()["detail"]
+
+
+def test_modificar_reemplaza_la_reserva_con_el_precio_vigente(cliente):  # S4, R13
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))                       # precio por persona 516.000
+    encabezados = cliente_autenticado(cliente)
+    original = _reservar(cliente, p["id"], 2, encabezados)
+
+    respuesta = cliente.put(f"/api/reservas/{original['id']}", json={"cantidad_personas": 3},
+                            headers=encabezados)
+
+    assert respuesta.status_code == 200, respuesta.text
+    nueva = respuesta.json()
+    assert nueva["id"] != original["id"]
+    assert nueva["cantidad_personas"] == 3
+    assert nueva["total"] == 1_548_000
+    historial = {r["id"]: r for r in cliente.get("/api/reservas", headers=encabezados).json()}
+    assert historial[original["id"]]["cancelada"] is True
+    assert historial[nueva["id"]]["cancelada"] is False
+
+
+def test_modificar_respeta_el_cupo_sin_contar_la_reserva_propia(cliente):  # R14
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))                       # cupo 12
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 2, encabezados)
+
+    excede = cliente.put(f"/api/reservas/{reserva['id']}", json={"cantidad_personas": 13}, headers=encabezados)
+    assert excede.status_code == 400
+
+    completa = cliente.put(f"/api/reservas/{reserva['id']}", json={"cantidad_personas": 12}, headers=encabezados)
+    assert completa.status_code == 200, completa.text                # el cupo entero es posible
+
+
+def test_modificar_reserva_ajena_responde_404(cliente):             # R11
+    ids = _dos_destinos(cliente)
+    p = paquete_publicado(cliente, list(ids))
+    encabezados = cliente_autenticado(cliente)
+    reserva = _reservar(cliente, p["id"], 2, encabezados)
+    otros = cliente_autenticado(cliente, correo="otra@example.com", nombre="Otra Persona")
+
+    respuesta = cliente.put(f"/api/reservas/{reserva['id']}", json={"cantidad_personas": 1}, headers=otros)
+
+    assert respuesta.status_code == 404

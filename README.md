@@ -4,7 +4,7 @@ Proyecto de la asignatura **TI3V21 Programación Orientada a Objeto Seguro** (IN
 
 **Integrantes:** Logan Silva Jara y Camilo Sepúlveda.
 
-**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 133 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 8) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
+**Estado:** proyecto cerrado para la entrega del 5 de octubre de 2026. Backend con 140 pruebas, frontend React/Vite probado de punta a punta en navegador, Informe Técnico completo (secciones 1 a 8) y despliegue público en Render (plan gratuito): https://viajes-aventura-o5p1.onrender.com
 
 ## Material de referencia
 
@@ -27,7 +27,7 @@ Estructura de `backend/`, fiel al diagrama de clases de la sección 3.3 del Info
 - `app/api/` — rutas FastAPI y esquemas Pydantic (solo tipos y largos; no repiten reglas de negocio). Las rutas que modifican el catálogo exigen sesión de administrador.
 - `app/database.py` — conexión y esquema completo (6 tablas).
 - `app/crear_administrador.py` — crea la cuenta de un socio administrador desde la consola.
-- `tests/` — 133 pruebas: dominio, seguridad, API, concurrencia e integración de punta a punta (`test_integracion.py`), sobre una base SQLite temporal.
+- `tests/` — 140 pruebas: dominio, seguridad, API, concurrencia e integración de punta a punta (`test_integracion.py`), sobre una base SQLite temporal.
 
 Instalar y ejecutar (Windows, desde `backend/`):
 
@@ -75,6 +75,7 @@ Estructura de `frontend/src/`, arquitectura de la sección 5.1 del Informe Técn
 - `api.js` — cliente HTTP a `/api` (agrega el token `Authorization: Bearer` cuando corresponde).
 - `auth.jsx` — contexto de sesión (React Context + `localStorage`): guarda `{ token, rol, perfil }`; el rol siempre sale de lo que el backend valida al iniciar sesión, nunca se simula en el frontend.
 - `pages/` — `Catalogo`, `PaqueteDetalle` (pública); `ClienteRegistro`, `ClienteLogin`, `MisReservas` (cliente); `AdminLogin`, `AdminDestinos`, `AdminPaquetes` (administrador).
+- `MisReservas` permite al cliente **modificar** la cantidad de personas (la reserva anterior queda cancelada y se crea una nueva al precio vigente) y **cancelar** una reserva hasta la fecha de salida, liberando su cupo (supuesto S4).
 
 Instalar y ejecutar (desde `frontend/`, con el backend ya corriendo en `:8000`):
 
@@ -120,4 +121,4 @@ Cada cambio del proyecto (código, documentación o avance del Informe Técnico)
 
 ## Calidad estática
 
-El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 133 pruebas aprobadas (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.
+El análisis SonarCloud del commit `5c495d17` quedó con Quality Gate aprobado y 0 issues en New Code. El backend mantiene 140 pruebas aprobadas (133 en ese análisis más 7 de cancelación y modificación de reservas, agregadas después) (una agregada en el Cambio 12 tras detectar que la nueva validación de correo aceptaba más de una arroba); Bandit no detecta problemas y pip-audit no encuentra vulnerabilidades conocidas. El frontend compila con `npm run build` y `npm run lint` termina sin advertencias.

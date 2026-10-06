@@ -51,7 +51,8 @@ class PaqueteRepositorio(Repositorio[Paquete]):
     def personas_reservadas(self, paquete_id: int) -> int:
         """Suma de personas de las reservas del paquete; base del cupo disponible (R14)."""
         fila = self._conexion.execute(
-            "SELECT COALESCE(SUM(cantidad_personas), 0) FROM reservas WHERE paquete_id = ?", (paquete_id,)).fetchone()
+            "SELECT COALESCE(SUM(cantidad_personas), 0) FROM reservas WHERE paquete_id = ? AND cancelada = 0",
+            (paquete_id,)).fetchone()
         return fila[0]
 
     def eliminar(self, paquete_id: int) -> None:

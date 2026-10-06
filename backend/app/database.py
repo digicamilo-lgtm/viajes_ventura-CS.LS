@@ -64,7 +64,8 @@ CREATE TABLE IF NOT EXISTS reservas (
     paquete_id        INTEGER NOT NULL REFERENCES paquetes (id),
     fecha_emision     TEXT    NOT NULL,                                -- R12
     cantidad_personas INTEGER NOT NULL CHECK (cantidad_personas >= 1), -- R16
-    total             INTEGER NOT NULL CHECK (total > 0)               -- R13
+    total             INTEGER NOT NULL CHECK (total > 0),              -- R13
+    cancelada         INTEGER NOT NULL DEFAULT 0 CHECK (cancelada IN (0, 1))  -- S4 (cancelación)
 );
 """
 
@@ -83,3 +84,8 @@ def conectar(ruta: Path | str | None = None) -> sqlite3.Connection:
 
 def crear_esquema(conexion: sqlite3.Connection) -> None:
     conexion.executescript(ESQUEMA)
+    columnas = {fila[1] for fila in conexion.execute("PRAGMA table_info(reservas)")}
+    if "cancelada" not in columnas:  # bases creadas antes de la cancelación
+        conexion.execute("ALTER TABLE reservas ADD COLUMN cancelada INTEGER NOT NULL DEFAULT 0 "
+                         "CHECK (cancelada IN (0, 1))")
+        conexion.commit()

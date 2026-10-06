@@ -8,8 +8,9 @@ class Reserva:
     """Reserva de un cliente sobre un paquete publicado (sección 1.3 del caso). Reglas R12 a R16."""
 
     def __init__(self, cliente_id: int, paquete_id: int, fecha_emision: date, cantidad_personas: int,
-                 total: int, id: int | None = None):
+                 total: int, id: int | None = None, cancelada: bool = False):
         self._id = id
+        self._cancelada = cancelada
         self._cliente_id = self._validar_id(cliente_id, "cliente")
         self._paquete_id = self._validar_id(paquete_id, "paquete")
         if not isinstance(fecha_emision, date):
@@ -59,6 +60,30 @@ class Reserva:
     @property
     def total(self) -> int:
         return self._total
+
+    @property
+    def cancelada(self) -> bool:
+        return self._cancelada
+
+    def cancelar(self, paquete: Paquete, hoy: date) -> None:
+        """Cancela la reserva hasta el día de salida (S4). Libera su cupo al dejar de contarse."""
+        if self._cancelada:
+            raise ReglaNegocioError("La reserva ya está cancelada.")
+        if paquete.esta_vencido(hoy):
+            raise ReglaNegocioError("No se puede cancelar: el paquete ya partió.")
+        self._cancelada = True
+
+    def reemplazar_por(self, paquete: Paquete, nueva_cantidad_personas: int, personas_reservadas: int,
+                       hoy: date) -> "Reserva":
+        """Modifica la cantidad de personas (S4): la reserva actual se cancela y se crea una nueva
+        al precio vigente, para que cada reserva conserve un total fijo (R13)."""
+        if self._cancelada:
+            raise ReglaNegocioError("No se puede modificar una reserva cancelada.")
+        otras = personas_reservadas - self._cantidad_personas  # esta reserva deja de ocupar cupo
+        nueva = Reserva.crear(cliente_id=self._cliente_id, paquete=paquete,
+                              cantidad_personas=nueva_cantidad_personas, personas_reservadas=otras, hoy=hoy)
+        self.cancelar(paquete, hoy)
+        return nueva
 
     # --- validaciones ----------------------------------------------------
     @staticmethod

@@ -161,14 +161,19 @@ class ReservaEntrada(BaseModel):
     cantidad_personas: int = Field(ge=1)          # R16
 
 
+class ReservaModificacion(BaseModel):
+    cantidad_personas: int = Field(ge=1)          # R16
+
+
 class ReservaSalida(BaseModel):
     id: int
     paquete_id: int
     fecha_emision: date
     cantidad_personas: int
     total: int
+    cancelada: bool
 
     @classmethod
     def desde(cls, r: Reserva) -> "ReservaSalida":
         return cls(id=r.id, paquete_id=r.paquete_id, fecha_emision=r.fecha_emision,
-                   cantidad_personas=r.cantidad_personas, total=r.total)
+                   cantidad_personas=r.cantidad_personas, total=r.total, cancelada=r.cancelada)

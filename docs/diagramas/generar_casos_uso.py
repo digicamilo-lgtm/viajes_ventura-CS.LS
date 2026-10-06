@@ -20,6 +20,8 @@ CASOS = {
     "login": (MED, 700, "CU-03 Iniciar sesión"),
     "verificar": (MED, 380, "CU-12 Verificar cupo y\nfecha de salida"),
     "calcular": (MED, 110, "CU-11 Calcular precio\ndel paquete"),
+    "cancelar": (IZQ, 540, "CU-14 Cancelar reserva"),
+    "modificar": (MED, 540, "CU-15 Modificar reserva"),
     "crear": (DER, 90, "CU-10 Crear paquete"),
     "publicar": (DER, 170, "CU-13 Publicar paquete"),
     "listar": (DER, 250, "CU-06 Listar destinos"),
@@ -28,8 +30,9 @@ CASOS = {
     "bajadest": (DER, 490, "CU-09 Dar de baja destino"),
 }
 ACTORES = {"Cliente": (75, 380), "Administrador": (1075, 470)}
-ASOCIACIONES = [("Cliente", c) for c in ("consultar", "registrarse", "reservar", "historial", "login")] + [("Administrador", c) for c in ("crear", "publicar", "listar", "regdest", "moddest", "bajadest", "login")]
-INCLUDES = [("reservar", "verificar"), ("reservar", "login"), ("historial", "login"), ("crear", "calcular")]
+ASOCIACIONES = [("Cliente", c) for c in ("consultar", "registrarse", "reservar", "historial", "login", "cancelar", "modificar")] + [("Administrador", c) for c in ("crear", "publicar", "listar", "regdest", "moddest", "bajadest", "login")]
+INCLUDES = [("reservar", "verificar"), ("reservar", "login"), ("historial", "login"), ("crear", "calcular"),
+            ("modificar", "verificar"), ("cancelar", "login")]
 
 
 def borde(caso, hacia):
